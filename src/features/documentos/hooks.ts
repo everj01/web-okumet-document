@@ -1,0 +1,112 @@
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { mensajeDeError } from '@/lib/api'
+import type { Documento } from '@/types'
+import { documentosApi, documentosKeys, type FiltroDocumentos } from './api'
+
+export function useDocumentos(filtro: FiltroDocumentos) {
+  return useQuery({
+    queryKey: documentosKeys.lista(filtro),
+    queryFn: () => documentosApi.listar(filtro),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useDocumento(uuid: string | undefined) {
+  return useQuery({
+    queryKey: documentosKeys.detalle(uuid ?? ''),
+    queryFn: () => documentosApi.obtener(uuid!),
+    enabled: Boolean(uuid),
+  })
+}
+
+// El PDF se guarda en caché para no volver a descargarlo al regresar a la vista.
+export function useArchivo(uuid: string | undefined) {
+  return useQuery({
+    queryKey: documentosKeys.archivo(uuid ?? ''),
+    queryFn: () => documentosApi.archivo(uuid!),
+    enabled: Boolean(uuid),
+    staleTime: 10 * 60_000,
+  })
+}
+
+export function useSubirDocumento(expedienteUuid: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ archivo, nombre }: { archivo: File; nombre: string }) =>
+      documentosApi.subir(expedienteUuid, archivo, nombre),
+    onSuccess: (documento: Documento) => {
+      queryClient.invalidateQueries({ queryKey: ['documentos'] })
+      queryClient.invalidateQueries({ queryKey: ['expedientes', 'detalle'] })
+      toast.success('Documento subido', {
+        description: documento.paginas
+          ? `Se leyeron ${documento.paginas} páginas.`
+          : 'No se pudo leer el texto: puede ser un PDF escaneado.',
+      })
+    },
+    onError: (error) => toast.error('No se pudo subir', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useEliminarDocumento() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (uuid: string) => documentosApi.eliminar(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documentos'] })
+      queryClient.invalidateQueries({ queryKey: ['expedientes'] })
+      toast.success('Documento eliminado')
+    },
+    onError: (error) => toast.error('No se pudo eliminar', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useAsistente(documentoUuid: string | undefined) {
+  const queryClient = useQueryClient()
+  const clave = documentoUuid ?? ''
+
+  const resumen = useMutation({
+    mutationFn: () => documentosApi.resumen(documentoUuid!),
+    onSuccess: (texto) => {
+      queryClient.setQueryData(documentosKeys.detalle(clave), (actual?: Documento) =>
+        actual ? { ...actual, resumen: texto } : actual,
+      )
+    },
+    onError: (error) => toast.error('No se pudo generar el resumen', { description: mensajeDeError(error) }),
+  })
+
+  const preguntar = useMutation({
+    mutationFn: (pregunta: string) => documentosApi.preguntar(documentoUuid!, pregunta),
+    onSuccess: (consulta) => {
+      queryClient.setQueryData(documentosKeys.detalle(clave), (actual?: Documento) =>
+        actual ? { ...actual, consultas: [consulta, ...(actual.consultas ?? [])] } : actual,
+      )
+    },
+    onError: (error) => toast.error('No se pudo consultar', { description: mensajeDeError(error) }),
+  })
+
+  return { resumen, preguntar }
+}
+
+// llamada costosa: solo corre con el diálogo abierto y nunca se revalida sola (staleTime: Infinity)
+export function useExtraccion(documentoUuid: string, activo: boolean) {
+  const queryClient = useQueryClient()
+
+  const consulta = useQuery({
+    queryKey: documentosKeys.extraccion(documentoUuid),
+    queryFn: () => documentosApi.extraccion(documentoUuid),
+    enabled: activo && Boolean(documentoUuid),
+    staleTime: Infinity,
+    retry: false,
+  })
+
+  const regenerar = useMutation({
+    mutationFn: () => documentosApi.extraccion(documentoUuid, true),
+    onSuccess: (datos) => queryClient.setQueryData(documentosKeys.extraccion(documentoUuid), datos),
+    onError: (error) => toast.error('No se pudo volver a analizar', { description: mensajeDeError(error) }),
+  })
+
+  return { consulta, regenerar }
+}
