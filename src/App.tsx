@@ -9,7 +9,16 @@ const LoginPage = lazy(() => import('./features/auth/login-page'))
 const RegistroPage = lazy(() => import('./features/auth/registro-page'))
 const ClaveMaestraPage = lazy(() => import('./features/sistema-admin/clave-maestra-page'))
 const SistemaAdminLoginPage = lazy(() => import('./features/sistema-admin/login-page'))
-const PanelSistemaAdminPage = lazy(() => import('./features/sistema-admin/panel-sistema-admin-page'))
+const SaShell = lazy(() => import('./features/sistema-admin/sa-shell'))
+const DashboardSaPage = lazy(() => import('./features/sistema-admin/dashboard-sa-page'))
+const TenantsSaPage = lazy(() => import('./features/sistema-admin/tenants-sa-page'))
+const UsuariosSaPage = lazy(() => import('./features/sistema-admin/usuarios-sa-page'))
+const ClientesSaPage = lazy(() => import('./features/sistema-admin/clientes-sa-page'))
+const ExpedientesSaPage = lazy(() => import('./features/sistema-admin/expedientes-sa-page'))
+const EventosSaPage = lazy(() => import('./features/sistema-admin/eventos-sa-page'))
+const EnLineaSaPage = lazy(() => import('./features/sistema-admin/en-linea-sa-page'))
+const AuditoriaSaPage = lazy(() => import('./features/sistema-admin/auditoria-sa-page'))
+const ReportesSaPage = lazy(() => import('./features/sistema-admin/reportes-sa-page'))
 const PanelPage = lazy(() => import('./features/panel/panel-page'))
 const ClientesPage = lazy(() => import('./features/clientes/clientes-page'))
 const ClienteDetallePage = lazy(() => import('./features/clientes/cliente-detalle-page'))
@@ -58,7 +67,17 @@ export function App() {
                 <Route path="login" element={<SistemaAdminLoginPage />} />
               </Route>
               <Route element={<RutaSuperAdmin />}>
-                <Route path="panel" element={<PanelSistemaAdminPage />} />
+                <Route path="panel" element={<SaShell />}>
+                  <Route index element={<DashboardSaPage />} />
+                  <Route path="tenants" element={<TenantsSaPage />} />
+                  <Route path="usuarios" element={<UsuariosSaPage />} />
+                  <Route path="clientes" element={<ClientesSaPage />} />
+                  <Route path="expedientes" element={<ExpedientesSaPage />} />
+                  <Route path="eventos" element={<EventosSaPage />} />
+                  <Route path="en-linea" element={<EnLineaSaPage />} />
+                  <Route path="auditoria" element={<AuditoriaSaPage />} />
+                  <Route path="reportes" element={<ReportesSaPage />} />
+                </Route>
               </Route>
               <Route path="*" element={<Navigate to="/sistema_admin" replace />} />
             </Routes>

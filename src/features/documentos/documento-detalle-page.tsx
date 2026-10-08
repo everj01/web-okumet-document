@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AvisoIa } from '@/components/common/aviso-ia'
 import { EstadoError, EstadoVacio } from '@/components/common/estados'
 import { EtiquetaChip } from '@/components/common/etiqueta-chip'
 import { PageHeader } from '@/components/common/page-header'
@@ -207,7 +208,10 @@ export default function DocumentoDetallePage() {
                   <Skeleton className="h-3.5 w-9/12" />
                 </div>
               ) : documento.resumen ? (
-                <p className="text-sm whitespace-pre-line">{documento.resumen}</p>
+                <div className="space-y-3">
+                  <AvisoIa />
+                  <p className="text-sm whitespace-pre-line">{documento.resumen}</p>
+                </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Genera un resumen para saber de qué trata el documento sin abrirlo completo.
@@ -237,6 +241,8 @@ export default function DocumentoDetallePage() {
             </div>
 
             <div className="max-h-[22rem] space-y-4 overflow-y-auto p-5">
+              {consultas.length ? <AvisoIa /> : null}
+
               {preguntar.isPending ? (
                 <div className="space-y-2 rounded-lg bg-secondary/60 p-4">
                   <Skeleton className="h-3.5 w-1/2" />

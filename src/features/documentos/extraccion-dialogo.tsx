@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AvisoIa } from '@/components/common/aviso-ia'
 import { EstadoVacio } from '@/components/common/estados'
 import { useExpediente, useGuardarExpediente } from '@/features/expedientes/hooks'
 import { mensajeDeError } from '@/lib/api'
@@ -183,6 +184,8 @@ export function ExtraccionDialogo({ abierto, onAbierto, documentoUuid, expedient
         </DialogHeader>
 
         <div className="max-h-[26rem] space-y-5 overflow-y-auto">
+          {!cargando && !consulta.error ? <AvisoIa /> : null}
+
           {cargando ? (
             <div className="space-y-2">
               <Skeleton className="h-14" />

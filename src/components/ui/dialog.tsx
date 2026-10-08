@@ -23,8 +23,9 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
 function DialogContent({
   className,
   children,
+  ocultarCierre,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & { ocultarCierre?: boolean }) {
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
@@ -39,10 +40,12 @@ function DialogContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute top-4 right-4 rounded-md p-1 text-muted-foreground opacity-70 transition hover:bg-secondary hover:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none">
-          <X className="size-4" />
-          <span className="sr-only">Cerrar</span>
-        </DialogPrimitive.Close>
+        {ocultarCierre ? null : (
+          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-md p-1 text-muted-foreground opacity-70 transition hover:bg-secondary hover:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none">
+            <X className="size-4" />
+            <span className="sr-only">Cerrar</span>
+          </DialogPrimitive.Close>
+        )}
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
   )

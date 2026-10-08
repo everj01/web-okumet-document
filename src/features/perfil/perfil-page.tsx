@@ -3,15 +3,17 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { KeyRound, Loader2 } from 'lucide-react'
+import { Info, KeyRound, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Campo } from '@/components/common/campo'
 import { PageHeader } from '@/components/common/page-header'
 import { useAuth } from '@/features/auth/auth-context'
+import { useClaudeUso } from '@/features/claude-usage/hooks'
 import { api, mensajeDeError } from '@/lib/api'
 import { iniciales } from '@/lib/formato'
+import { cn } from '@/lib/utils'
 
 const esquema = z
   .object({
@@ -28,6 +30,7 @@ type Formulario = z.infer<typeof esquema>
 
 export default function PerfilPage() {
   const { usuario, rol } = useAuth()
+  const { data: claudeUso } = useClaudeUso()
 
   const { register, handleSubmit, reset, formState } = useForm<Formulario>({
     resolver: zodResolver(esquema),
@@ -72,6 +75,47 @@ export default function PerfilPage() {
           </div>
         </CardContent>
       </Card>
+
+      {claudeUso ? (
+        <Card className="aparecer">
+          <div className="flex items-center gap-2 border-b border-border px-6 py-4">
+            <Sparkles className="size-4 text-muted-foreground" />
+            <h2 className="font-medium">Uso de asistente IA este mes</h2>
+          </div>
+
+          <CardContent className="space-y-2 p-6">
+            <div className="flex items-baseline justify-between text-sm">
+              <span>
+                {claudeUso.usado} de {claudeUso.limite} llamadas usadas
+              </span>
+              <span className="text-xs text-muted-foreground">Periodo {claudeUso.periodo}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-secondary">
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all',
+                  claudeUso.usado >= claudeUso.limite
+                    ? 'bg-destructive'
+                    : claudeUso.advertencia
+                      ? 'bg-warning'
+                      : 'bg-primary',
+                )}
+                style={{ width: `${Math.min(100, (claudeUso.usado / claudeUso.limite) * 100)}%` }}
+              />
+            </div>
+            {claudeUso.usado >= claudeUso.limite ? (
+              <p className="text-xs text-destructive">
+                Alcanzaste el límite mensual. Se restablece al iniciar el próximo mes.
+              </p>
+            ) : claudeUso.advertencia ? (
+              <p className="flex items-center gap-1.5 text-xs text-warning">
+                <Info className="size-3.5 shrink-0" />
+                Te quedan pocos créditos de IA este mes (quedan {claudeUso.restante}).
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card className="aparecer">
         <div className="flex items-center gap-2 border-b border-border px-6 py-4">

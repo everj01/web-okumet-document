@@ -41,7 +41,7 @@ export default function SistemaAdminLoginPage() {
   })
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-neutral-950 p-6">
+    <div className="flex min-h-dvh items-center justify-center bg-background p-6">
       <Card className="w-full max-w-sm rounded-lg">
         <CardContent className="space-y-6 p-7">
           <div className="space-y-3 text-center">

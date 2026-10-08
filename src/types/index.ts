@@ -284,3 +284,29 @@ export interface Extraccion {
 
 // Igual que Extraccion pero del análisis de un PDF que todavía no se guardó como Documento
 export type ExtraccionPrevia = Omit<Extraccion, 'documento_id' | 'creado_en'>
+
+export interface ClaudeUso {
+  usado: number
+  limite: number
+  restante: number
+  advertencia: boolean
+  periodo: string
+}
+
+export type EstadoExportacion = 'pendiente' | 'procesando' | 'completado' | 'fallido'
+
+export interface Exportacion {
+  id: number
+  uuid: string
+  estado: EstadoExportacion
+  total_expedientes: number
+  error_mensaje: string | null
+  creado_en: string
+  completado_en: string | null
+}
+
+export interface ExportacionPayload {
+  fecha_inicio: string | null
+  fecha_fin: string | null
+  expediente_ids: number[]
+}

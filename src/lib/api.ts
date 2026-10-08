@@ -4,11 +4,13 @@ const TOKEN = 'okd_token'
 export class ApiError extends Error {
   status: number
   errores: Record<string, string[]>
+  code?: string
 
-  constructor(message: string, status: number, errores: Record<string, string[]> = {}) {
+  constructor(message: string, status: number, errores: Record<string, string[]> = {}, code?: string) {
     super(message)
     this.status = status
     this.errores = errores
+    this.code = code
   }
 }
 
@@ -75,15 +77,20 @@ export async function api<T>(
     const errores: Record<string, string[]> = datos?.errors ?? {}
     const primero = Object.values(errores).flat()[0]
 
-    throw new ApiError(primero ?? datos?.message ?? mensajePorEstado(respuesta.status), respuesta.status, errores)
+    throw new ApiError(
+      primero ?? datos?.message ?? mensajePorEstado(respuesta.status),
+      respuesta.status,
+      errores,
+      datos?.code,
+    )
   }
 
   return tipo.includes('json') ? ((await respuesta.json()) as T) : (undefined as T)
 }
 
 // el archivo necesita el token, así que se descarga como blob
-export async function apiBlob(ruta: string): Promise<Blob> {
-  const token = leerToken()
+export async function apiBlob(ruta: string, tokenPersonalizado?: string | null): Promise<Blob> {
+  const token = tokenPersonalizado !== undefined ? tokenPersonalizado : leerToken()
 
   const respuesta = await fetch(`${BASE}${ruta}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -102,6 +109,10 @@ function mensajePorEstado(estado: number) {
   if (estado >= 500) return 'El servidor tuvo un problema. Inténtalo de nuevo.'
 
   return 'No se pudo completar la operación.'
+}
+
+export function esLimiteClaudeExcedido(error: unknown) {
+  return error instanceof ApiError && error.code === 'claude_limit_exceeded'
 }
 
 export function mensajeDeError(error: unknown, porDefecto = 'Ocurrió un error inesperado.') {

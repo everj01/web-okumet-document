@@ -1,8 +1,13 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { mensajeDeError } from '@/lib/api'
+import { esLimiteClaudeExcedido, mensajeDeError } from '@/lib/api'
 import type { Documento, EtiquetaPayload } from '@/types'
 import { documentosApi, documentosKeys, etiquetasApi, type FiltroDocumentos } from './api'
+
+// al tope de llamadas a Claude, refresca el indicador de uso para que se vea bloqueado de inmediato
+function onErrorIa(error: unknown, queryClient: QueryClient) {
+  if (esLimiteClaudeExcedido(error)) queryClient.invalidateQueries({ queryKey: ['claude-uso'] })
+}
 
 export function useDocumentos(filtro: FiltroDocumentos) {
   return useQuery({
@@ -74,7 +79,10 @@ export function useAsistente(documentoUuid: string | undefined) {
         actual ? { ...actual, resumen: texto } : actual,
       )
     },
-    onError: (error) => toast.error('No se pudo generar el resumen', { description: mensajeDeError(error) }),
+    onError: (error) => {
+      toast.error('No se pudo generar el resumen', { description: mensajeDeError(error) })
+      onErrorIa(error, queryClient)
+    },
   })
 
   const preguntar = useMutation({
@@ -84,16 +92,24 @@ export function useAsistente(documentoUuid: string | undefined) {
         actual ? { ...actual, consultas: [consulta, ...(actual.consultas ?? [])] } : actual,
       )
     },
-    onError: (error) => toast.error('No se pudo consultar', { description: mensajeDeError(error) }),
+    onError: (error) => {
+      toast.error('No se pudo consultar', { description: mensajeDeError(error) })
+      onErrorIa(error, queryClient)
+    },
   })
 
   return { resumen, preguntar }
 }
 
 export function useExtraccionPrevia() {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: (archivo: File) => documentosApi.extraerPrevia(archivo),
-    onError: (error) => toast.error('No se pudo analizar el PDF', { description: mensajeDeError(error) }),
+    onError: (error) => {
+      toast.error('No se pudo analizar el PDF', { description: mensajeDeError(error) })
+      onErrorIa(error, queryClient)
+    },
   })
 }
 
@@ -152,7 +168,10 @@ export function useExtraccion(documentoUuid: string, activo: boolean) {
   const regenerar = useMutation({
     mutationFn: () => documentosApi.extraccion(documentoUuid, true),
     onSuccess: (datos) => queryClient.setQueryData(documentosKeys.extraccion(documentoUuid), datos),
-    onError: (error) => toast.error('No se pudo volver a analizar', { description: mensajeDeError(error) }),
+    onError: (error) => {
+      toast.error('No se pudo volver a analizar', { description: mensajeDeError(error) })
+      onErrorIa(error, queryClient)
+    },
   })
 
   return { consulta, regenerar }

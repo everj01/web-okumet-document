@@ -1,8 +1,20 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { mensajeDeError } from '@/lib/api'
-import { verificacionApi } from './api'
+import { ApiError, mensajeDeError } from '@/lib/api'
+import { registroApi, verificacionApi } from './api'
 import { useAuth } from './auth-context'
+
+export function useBuscarRuc() {
+  return useMutation({
+    mutationFn: (numero: string) => registroApi.buscarRuc(numero),
+    onError: (error) => {
+      const noEncontrado = error instanceof ApiError && error.status === 404
+      toast.error(noEncontrado ? 'No se encontró ese RUC' : 'No se pudo buscar', {
+        description: noEncontrado ? 'Revisa el número o complétalo a mano.' : mensajeDeError(error),
+      })
+    },
+  })
+}
 
 export function useReenviarCodigo() {
   return useMutation({

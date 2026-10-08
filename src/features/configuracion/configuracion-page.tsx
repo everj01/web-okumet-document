@@ -1,15 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2, Mail, Plus, Trash2 } from 'lucide-react'
+import { Download, Loader2, Mail, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EstadoError } from '@/components/common/estados'
 import { PageHeader } from '@/components/common/page-header'
+import { ExportacionDialogo } from '@/features/exportaciones/exportacion-dialogo'
+import { useCrearExportacion } from '@/features/exportaciones/hooks'
+import { ProgresoExportacionModal } from '@/features/exportaciones/progreso-exportacion-modal'
 import { mensajeDeError } from '@/lib/api'
+import type { ExportacionPayload } from '@/types'
 import { useConfiguracion, useGuardarConfiguracion } from './hooks'
 
 const esquema = z.object({
@@ -21,6 +25,17 @@ type Formulario = z.infer<typeof esquema>
 export default function ConfiguracionPage() {
   const { data: configuracion, isPending, error, refetch } = useConfiguracion()
   const guardar = useGuardarConfiguracion()
+
+  const [exportacionAbierta, setExportacionAbierta] = useState(false)
+  const [exportacionUuid, setExportacionUuid] = useState<string | null>(null)
+  const crearExportacion = useCrearExportacion()
+
+  const iniciarExportacion = (filtros: ExportacionPayload) => {
+    setExportacionAbierta(false)
+    crearExportacion.mutate(filtros, {
+      onSuccess: (exportacion) => setExportacionUuid(exportacion.uuid),
+    })
+  }
 
   const { control, register, handleSubmit, reset, formState } = useForm<Formulario>({
     resolver: zodResolver(esquema),
@@ -112,6 +127,31 @@ export default function ConfiguracionPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="aparecer">
+        <div className="flex items-center gap-2 border-b border-border px-6 py-4">
+          <Download className="size-4 text-muted-foreground" />
+          <h2 className="font-medium">Exportar datos (backup)</h2>
+        </div>
+
+        <CardContent className="space-y-4 p-6">
+          <p className="text-sm text-muted-foreground">
+            Genera un ZIP con los documentos del negocio organizados por cliente y expediente, más un Excel con los
+            datos informativos de clientes, expedientes, movimientos y eventos.
+          </p>
+          <Button type="button" onClick={() => setExportacionAbierta(true)} disabled={crearExportacion.isPending}>
+            {crearExportacion.isPending ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+            Exportar datos
+          </Button>
+        </CardContent>
+      </Card>
+
+      <ExportacionDialogo
+        abierto={exportacionAbierta}
+        onAbierto={setExportacionAbierta}
+        onConfirmar={iniciarExportacion}
+      />
+      <ProgresoExportacionModal uuid={exportacionUuid} onCerrar={() => setExportacionUuid(null)} />
     </div>
   )
 }
