@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Outlet } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCanalAgenda } from '@/features/agenda/use-canal-agenda'
+import { VerificacionGate } from '@/features/auth/verificacion-gate'
 import { useSidebarColapsado } from '@/hooks/use-sidebar-colapsado'
 import { cn } from '@/lib/utils'
 import { Sidebar } from './sidebar'
@@ -22,6 +23,7 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-dvh">
+      <VerificacionGate />
       <aside
         className={cn(
           'hidden shrink-0 transition-[width] duration-200 lg:block',

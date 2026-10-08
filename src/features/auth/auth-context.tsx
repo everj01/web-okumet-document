@@ -24,6 +24,7 @@ interface ValorAuth {
   iniciarSesion: (email: string, password: string) => Promise<void>
   registrar: (datos: RegistroPayload) => Promise<void>
   cerrarSesion: () => void
+  actualizarUsuario: (usuario: Usuario) => void
 }
 
 const AuthContext = createContext<ValorAuth | null>(null)
@@ -76,6 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUsuario(respuesta.usuario)
   }, [])
 
+  const actualizarUsuario = useCallback((actualizado: Usuario) => {
+    localStorage.setItem(CLAVE_USUARIO, JSON.stringify(actualizado))
+    setUsuario(actualizado)
+  }, [])
+
   const registrar = useCallback(async (datos: RegistroPayload) => {
     const respuesta = await api<{ token: string; usuario: Usuario }>('/registro', {
       method: 'POST',
@@ -103,8 +109,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         api('/logout', { method: 'POST' }).catch(() => undefined)
         cerrarSesion()
       },
+      actualizarUsuario,
     }
-  }, [usuario, iniciarSesion, registrar, cerrarSesion])
+  }, [usuario, iniciarSesion, registrar, cerrarSesion, actualizarUsuario])
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>
 }

@@ -1,16 +1,17 @@
 import { api, apiBlob } from '@/lib/api'
-import type { Consulta, Documento, Extraccion, Paginado } from '@/types'
+import type { Consulta, Documento, Etiqueta, EtiquetaPayload, Extraccion, ExtraccionPrevia, Paginado } from '@/types'
 
 export interface FiltroDocumentos {
   pagina: number
   buscar: string
   expedienteId?: number | null
+  etiquetaId?: number | null
 }
 
 export const documentosApi = {
-  listar: ({ pagina, buscar, expedienteId }: FiltroDocumentos) =>
+  listar: ({ pagina, buscar, expedienteId, etiquetaId }: FiltroDocumentos) =>
     api<Paginado<Documento>>('/documentos', {
-      params: { page: pagina, buscar, expediente_id: expedienteId },
+      params: { page: pagina, buscar, expediente_id: expedienteId, etiqueta_id: etiquetaId },
     }),
 
   obtener: (uuid: string) => api<{ data: Documento }>(`/documentos/${uuid}`).then((r) => r.data),
@@ -44,6 +45,22 @@ export const documentosApi = {
       method: 'POST',
       params: refrescar ? { refrescar: 1 } : undefined,
     }).then((r) => r.data),
+
+  sincronizarEtiquetas: (uuid: string, etiquetaIds: number[]) =>
+    api<{ data: Documento }>(`/documentos/${uuid}/etiquetas`, {
+      method: 'PUT',
+      body: { etiqueta_ids: etiquetaIds },
+    }).then((r) => r.data),
+
+  // Analiza un PDF que todavía no se subió a ningún expediente; no persiste nada.
+  extraerPrevia: (archivo: File) => {
+    const cuerpo = new FormData()
+    cuerpo.append('archivo', archivo)
+
+    return api<{ data: ExtraccionPrevia }>('/documentos/extraer-previa', { method: 'POST', body: cuerpo }).then(
+      (r) => r.data,
+    )
+  },
 }
 
 export const documentosKeys = {
@@ -51,4 +68,16 @@ export const documentosKeys = {
   detalle: (uuid: string) => ['documentos', 'detalle', uuid] as const,
   archivo: (uuid: string) => ['documentos', 'archivo', uuid] as const,
   extraccion: (uuid: string) => ['documentos', 'extraccion', uuid] as const,
+}
+
+export const etiquetasApi = {
+  listar: () => api<{ data: Etiqueta[] }>('/etiquetas').then((r) => r.data),
+
+  crear: (datos: EtiquetaPayload) =>
+    api<{ data: Etiqueta }>('/etiquetas', { method: 'POST', body: datos }).then((r) => r.data),
+
+  actualizar: (uuid: string, datos: EtiquetaPayload) =>
+    api<{ data: Etiqueta }>(`/etiquetas/${uuid}`, { method: 'PUT', body: datos }).then((r) => r.data),
+
+  eliminar: (uuid: string) => api<void>(`/etiquetas/${uuid}`, { method: 'DELETE' }),
 }

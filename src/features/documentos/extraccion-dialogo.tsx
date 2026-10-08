@@ -154,6 +154,7 @@ export function ExtraccionDialogo({ abierto, onAbierto, documentoUuid, expedient
       materia: elegido('materia') ?? expediente.materia,
       juzgado: elegido('juzgado') ?? expediente.juzgado,
       estado: expediente.estado,
+      anio: expediente.anio,
       fecha_inicio: elegido('fecha_inicio') ?? aInputFecha(expediente.fecha_inicio),
       fecha_cierre: aInputFecha(expediente.fecha_cierre) || null,
       descripcion: expediente.descripcion,

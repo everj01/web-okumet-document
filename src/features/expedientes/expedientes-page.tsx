@@ -99,9 +99,16 @@ export default function ExpedientesPage() {
       celda: (expediente) => expediente.abogado?.name ?? 'Sin asignar',
     },
     {
+      id: 'anio',
+      encabezado: 'Año',
+      desde: 'sm',
+      className: 'text-center',
+      celda: (expediente) => <span className="tabular-nums">{expediente.anio}</span>,
+    },
+    {
       id: 'inicio',
       encabezado: 'Inicio',
-      desde: 'sm',
+      desde: 'md',
       celda: (expediente) => fechaCorta(expediente.fecha_inicio),
     },
     {

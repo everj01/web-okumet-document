@@ -21,6 +21,7 @@ const AgendaPage = lazy(() => import('./features/agenda/agenda-page'))
 const UsuariosPage = lazy(() => import('./features/usuarios/usuarios-page'))
 const PerfilPage = lazy(() => import('./features/perfil/perfil-page'))
 const TenantPage = lazy(() => import('./features/tenant/tenant-page'))
+const ConfiguracionPage = lazy(() => import('./features/configuracion/configuracion-page'))
 
 function usePrecargaVistas() {
   useEffect(() => {
@@ -86,6 +87,7 @@ export function App() {
           <Route element={<RutaSoloAdmin />}>
             <Route path="/usuarios" element={<UsuariosPage />} />
             <Route path="/negocio" element={<TenantPage />} />
+            <Route path="/configuracion" element={<ConfiguracionPage />} />
           </Route>
         </Route>
       </Route>

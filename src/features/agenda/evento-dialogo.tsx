@@ -25,7 +25,17 @@ import { useGuardarEvento } from './hooks'
 
 const esquema = z
   .object({
-    tipo: z.enum(['audiencia', 'vencimiento', 'reunion', 'otro']),
+    tipo: z.enum([
+      'audiencia',
+      'vencimiento',
+      'reunion',
+      'otro',
+      'plazo_absolver',
+      'plazo_apelar',
+      'actuacion_prueba',
+      'sentencia_1_instancia',
+      'sentencia_2_instancia',
+    ]),
     titulo: z.string().min(1, 'Ingresa un título').max(180),
     inicio: z.string().min(1, 'Elige la fecha y hora'),
     fin: z.string(),

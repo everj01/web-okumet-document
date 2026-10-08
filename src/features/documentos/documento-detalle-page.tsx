@@ -17,12 +17,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EstadoError, EstadoVacio } from '@/components/common/estados'
+import { EtiquetaChip } from '@/components/common/etiqueta-chip'
 import { PageHeader } from '@/components/common/page-header'
+import { SelectorEtiquetas } from '@/components/common/selector-etiquetas'
+import { useCatalogos } from '@/features/catalogos/use-catalogos'
 import { useBlobUrl } from '@/hooks/use-blob-url'
 import { ApiError, mensajeDeError } from '@/lib/api'
 import { fechaCorta, pesoLegible } from '@/lib/formato'
 import { ExtraccionDialogo } from './extraccion-dialogo'
-import { useArchivo, useAsistente, useDocumento } from './hooks'
+import { useArchivo, useAsistente, useCrearEtiqueta, useDocumento, useSincronizarEtiquetasDocumento } from './hooks'
 
 export default function DocumentoDetallePage() {
   const { uuid } = useParams()
@@ -31,6 +34,9 @@ export default function DocumentoDetallePage() {
   const { data: blob } = useArchivo(uuid)
   const urlArchivo = useBlobUrl(blob)
   const { resumen, preguntar } = useAsistente(uuid)
+  const { data: catalogos } = useCatalogos()
+  const sincronizarEtiquetas = useSincronizarEtiquetasDocumento(uuid ?? '')
+  const crearEtiqueta = useCrearEtiqueta()
 
   const [pagina, setPagina] = useState<number | null>(null)
   const [pregunta, setPregunta] = useState('')
@@ -121,6 +127,13 @@ export default function DocumentoDetallePage() {
         }
         acciones={
           <>
+            <SelectorEtiquetas
+              disponibles={catalogos?.etiquetas ?? []}
+              seleccionadas={documento.etiquetas ?? []}
+              guardando={sincronizarEtiquetas.isPending}
+              onCambiar={(ids) => sincronizarEtiquetas.mutate(ids)}
+              onCrear={(datos) => crearEtiqueta.mutateAsync(datos)}
+            />
             <Button variant="outline" onClick={() => setExtrayendo(true)} disabled={sinTexto}>
               <ScanText className="size-4" />
               Datos detectados
@@ -132,6 +145,22 @@ export default function DocumentoDetallePage() {
           </>
         }
       />
+
+      {documento.etiquetas?.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {documento.etiquetas.map((etiqueta) => (
+            <EtiquetaChip
+              key={etiqueta.id}
+              etiqueta={etiqueta}
+              onQuitar={() =>
+                sincronizarEtiquetas.mutate(
+                  (documento.etiquetas ?? []).filter((e) => e.id !== etiqueta.id).map((e) => e.id),
+                )
+              }
+            />
+          ))}
+        </div>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-5">
         <Card className="aparecer overflow-hidden xl:col-span-3">

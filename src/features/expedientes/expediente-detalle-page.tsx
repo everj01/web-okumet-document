@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
   ArrowLeft,
+  Bot,
   CalendarClock,
   CalendarPlus,
   Eye,
@@ -28,6 +29,7 @@ import {
 import { PageHeader } from '@/components/common/page-header'
 import { EventoDialogo } from '@/features/agenda/evento-dialogo'
 import { useAuth } from '@/features/auth/auth-context'
+import { REGISTRADO_POR_SISTEMA } from '@/lib/etiquetas'
 import { useEliminarDocumento } from '@/features/documentos/hooks'
 import { ApiError, mensajeDeError } from '@/lib/api'
 import { fechaCorta, fechaHora, pesoLegible } from '@/lib/formato'
@@ -210,6 +212,7 @@ export default function ExpedienteDetallePage() {
             { etiqueta: 'Materia', valor: expediente.materia || '—' },
             { etiqueta: 'Juzgado', valor: expediente.juzgado || '—' },
             { etiqueta: 'Abogado', valor: expediente.abogado?.name || 'Sin asignar' },
+            { etiqueta: 'Año', valor: String(expediente.anio) },
             { etiqueta: 'Inicio', valor: fechaCorta(expediente.fecha_inicio) },
           ].map((dato) => (
             <div key={dato.etiqueta}>
@@ -264,7 +267,12 @@ export default function ExpedienteDetallePage() {
                         {movimiento.detalle ? (
                           <p className="text-sm whitespace-pre-line text-muted-foreground">{movimiento.detalle}</p>
                         ) : null}
-                        {movimiento.registrado_por ? (
+                        {movimiento.registrado_por === REGISTRADO_POR_SISTEMA ? (
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Bot className="size-3.5" />
+                            Registrado automáticamente
+                          </p>
+                        ) : movimiento.registrado_por ? (
                           <p className="text-xs text-muted-foreground">Registrado por {movimiento.registrado_por}</p>
                         ) : null}
                       </div>

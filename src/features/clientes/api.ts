@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { Cliente, ClientePayload, Paginado } from '@/types'
+import type { Cliente, ClientePayload, DniResultado, Paginado, RucResultado } from '@/types'
 
 export interface FiltroClientes {
   pagina: number
@@ -19,6 +19,12 @@ export const clientesApi = {
     api<{ data: Cliente }>(`/clientes/${uuid}`, { method: 'PUT', body: datos }).then((r) => r.data),
 
   eliminar: (uuid: string) => api<void>(`/clientes/${uuid}`, { method: 'DELETE' }),
+}
+
+export const integracionesApi = {
+  dni: (numero: string) => api<{ data: DniResultado }>(`/integraciones/dniruc/dni/${numero}`).then((r) => r.data),
+
+  ruc: (numero: string) => api<{ data: RucResultado }>(`/integraciones/dniruc/ruc/${numero}`).then((r) => r.data),
 }
 
 export const clientesKeys = {

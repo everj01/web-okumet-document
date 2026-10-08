@@ -1,8 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { mensajeDeError } from '@/lib/api'
-import type { ClientePayload } from '@/types'
-import { clientesApi, clientesKeys, type FiltroClientes } from './api'
+import { ApiError, mensajeDeError } from '@/lib/api'
+import type { ClientePayload, DniResultado, RucResultado } from '@/types'
+import { clientesApi, clientesKeys, integracionesApi, type FiltroClientes } from './api'
 
 export function useClientes(filtro: FiltroClientes) {
   return useQuery({
@@ -31,6 +31,19 @@ export function useGuardarCliente(uuid?: string) {
       toast.success(uuid ? 'Cliente actualizado' : 'Cliente registrado', { description: cliente.nombre })
     },
     onError: (error) => toast.error('No se pudo guardar', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useBuscarDniRuc() {
+  return useMutation({
+    mutationFn: ({ tipo, numero }: { tipo: 'DNI' | 'RUC'; numero: string }): Promise<DniResultado | RucResultado> =>
+      tipo === 'DNI' ? integracionesApi.dni(numero) : integracionesApi.ruc(numero),
+    onError: (error) => {
+      const noEncontrado = error instanceof ApiError && error.status === 404
+      toast.error(noEncontrado ? 'No se encontró ese documento' : 'No se pudo buscar', {
+        description: noEncontrado ? 'Revisa el número o complétalo a mano.' : mensajeDeError(error),
+      })
+    },
   })
 }
 

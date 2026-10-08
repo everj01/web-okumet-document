@@ -1,8 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { mensajeDeError } from '@/lib/api'
-import type { Documento } from '@/types'
-import { documentosApi, documentosKeys, type FiltroDocumentos } from './api'
+import type { Documento, EtiquetaPayload } from '@/types'
+import { documentosApi, documentosKeys, etiquetasApi, type FiltroDocumentos } from './api'
 
 export function useDocumentos(filtro: FiltroDocumentos) {
   return useQuery({
@@ -88,6 +88,53 @@ export function useAsistente(documentoUuid: string | undefined) {
   })
 
   return { resumen, preguntar }
+}
+
+export function useExtraccionPrevia() {
+  return useMutation({
+    mutationFn: (archivo: File) => documentosApi.extraerPrevia(archivo),
+    onError: (error) => toast.error('No se pudo analizar el PDF', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useSincronizarEtiquetasDocumento(documentoUuid: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (etiquetaIds: number[]) => documentosApi.sincronizarEtiquetas(documentoUuid, etiquetaIds),
+    onSuccess: (documento) => {
+      queryClient.setQueryData(documentosKeys.detalle(documentoUuid), documento)
+      queryClient.invalidateQueries({ queryKey: ['documentos', 'lista'] })
+    },
+    onError: (error) => toast.error('No se pudieron guardar las etiquetas', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useCrearEtiqueta() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (datos: EtiquetaPayload) => etiquetasApi.crear(datos),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['catalogos'] })
+      toast.success('Etiqueta creada')
+    },
+    onError: (error) => toast.error('No se pudo crear la etiqueta', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useEliminarEtiqueta() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (uuid: string) => etiquetasApi.eliminar(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['catalogos'] })
+      queryClient.invalidateQueries({ queryKey: ['documentos'] })
+      toast.success('Etiqueta eliminada')
+    },
+    onError: (error) => toast.error('No se pudo eliminar la etiqueta', { description: mensajeDeError(error) }),
+  })
 }
 
 // llamada costosa: solo corre con el diálogo abierto y nunca se revalida sola (staleTime: Infinity)

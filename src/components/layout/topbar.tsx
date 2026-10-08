@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { LogOut, Menu, Moon, Sun, User } from 'lucide-react'
+import { LogOut, Menu, Moon, Settings, Sun, User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,7 +18,7 @@ import { iniciales } from '@/lib/formato'
 import { Sidebar } from './sidebar'
 
 export function Topbar() {
-  const { usuario, rol, cerrarSesion } = useAuth()
+  const { usuario, rol, esAdmin, cerrarSesion } = useAuth()
   const { tema, alternar } = useTema()
   const [menuAbierto, setMenuAbierto] = useState(false)
 
@@ -69,6 +69,14 @@ export function Topbar() {
                 Mi perfil
               </Link>
             </DropdownMenuItem>
+            {esAdmin ? (
+              <DropdownMenuItem asChild>
+                <Link to="/configuracion">
+                  <Settings />
+                  Configuración
+                </Link>
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem variant="destructive" onSelect={cerrarSesion}>
               <LogOut />
               Cerrar sesión

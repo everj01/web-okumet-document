@@ -5,9 +5,12 @@ import { ArrowRight, FileText, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Buscador } from '@/components/common/buscador'
 import { DataTable, type Columna } from '@/components/common/data-table'
+import { EtiquetaChip } from '@/components/common/etiqueta-chip'
 import { PageHeader } from '@/components/common/page-header'
+import { useCatalogos } from '@/features/catalogos/use-catalogos'
 import { useDebounce } from '@/hooks/use-debounce'
 import { mensajeDeError } from '@/lib/api'
 import { fechaCorta, pesoLegible } from '@/lib/formato'
@@ -15,13 +18,20 @@ import type { Documento } from '@/types'
 import { documentosApi, documentosKeys } from './api'
 import { useDocumentos } from './hooks'
 
+const TODAS = 'todas'
+
 export default function DocumentosPage() {
   const queryClient = useQueryClient()
+  const { data: catalogos } = useCatalogos()
   const [buscar, setBuscar] = useState('')
+  const [etiquetaId, setEtiquetaId] = useState<string>(TODAS)
   const [pagina, setPagina] = useState(1)
 
   const busqueda = useDebounce(buscar)
-  const filtro = useMemo(() => ({ pagina, buscar: busqueda }), [pagina, busqueda])
+  const filtro = useMemo(
+    () => ({ pagina, buscar: busqueda, etiquetaId: etiquetaId === TODAS ? null : Number(etiquetaId) }),
+    [pagina, busqueda, etiquetaId],
+  )
   const { data, isPending, isFetching, error, refetch } = useDocumentos(filtro)
 
   const columnas: Columna<Documento>[] = [
@@ -37,12 +47,15 @@ export default function DocumentosPage() {
             <Link to={`/documentos/${documento.uuid}`} className="font-medium hover:underline">
               {documento.nombre}
             </Link>
-            {documento.resumen ? (
-              <Badge variant="success" className="mt-1">
-                <Sparkles />
-                Resumen listo
-              </Badge>
-            ) : null}
+            <div className="mt-1 flex flex-wrap items-center gap-1">
+              {documento.resumen ? (
+                <Badge variant="success">
+                  <Sparkles />
+                  Resumen listo
+                </Badge>
+              ) : null}
+              {documento.etiquetas?.map((etiqueta) => <EtiquetaChip key={etiqueta.id} etiqueta={etiqueta} />)}
+            </div>
           </div>
         </div>
       ),
@@ -102,7 +115,7 @@ export default function DocumentosPage() {
       />
 
       <Card className="overflow-hidden">
-        <div className="border-b border-border p-4">
+        <div className="flex flex-wrap gap-3 border-b border-border p-4">
           <Buscador
             valor={buscar}
             onCambiar={(valor) => {
@@ -110,8 +123,28 @@ export default function DocumentosPage() {
               setPagina(1)
             }}
             placeholder="Ejemplo: medida cautelar, nombre de una parte, número de resolución..."
-            className="max-w-xl"
+            className="w-full sm:max-w-xl"
           />
+
+          <Select
+            value={etiquetaId}
+            onValueChange={(valor) => {
+              setEtiquetaId(valor)
+              setPagina(1)
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={TODAS}>Todas las etiquetas</SelectItem>
+              {(catalogos?.etiquetas ?? []).map((etiqueta) => (
+                <SelectItem key={etiqueta.id} value={String(etiqueta.id)}>
+                  {etiqueta.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className={isFetching && !isPending ? 'opacity-60 transition-opacity' : undefined}>

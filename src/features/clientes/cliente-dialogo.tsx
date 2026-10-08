@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Campo } from '@/components/common/campo'
 import { TIPOS_DOCUMENTO, TIPOS_PERSONA } from '@/lib/etiquetas'
 import type { Cliente, TipoDocumento, TipoPersona } from '@/types'
-import { useGuardarCliente } from './hooks'
+import { useBuscarDniRuc, useGuardarCliente } from './hooks'
 
 const esquema = z
   .object({
@@ -65,6 +65,7 @@ interface Props {
 
 export function ClienteDialogo({ abierto, onAbierto, cliente }: Props) {
   const guardar = useGuardarCliente(cliente?.uuid)
+  const buscar = useBuscarDniRuc()
 
   const { register, handleSubmit, reset, setValue, watch, formState } = useForm<Formulario>({
     resolver: zodResolver(esquema),
@@ -72,6 +73,30 @@ export function ClienteDialogo({ abierto, onAbierto, cliente }: Props) {
   })
 
   const tipoPersona = watch('tipo_persona')
+  const tipoDocumento = watch('tipo_documento')
+  const numeroDocumento = watch('numero_documento')
+
+  const largoValido =
+    (tipoDocumento === 'DNI' && numeroDocumento?.length === 8) ||
+    (tipoDocumento === 'RUC' && numeroDocumento?.length === 11)
+
+  const buscarDatos = () => {
+    if (!largoValido) return
+
+    buscar.mutate(
+      { tipo: tipoDocumento as 'DNI' | 'RUC', numero: numeroDocumento },
+      {
+        onSuccess: (resultado) => {
+          if ('nombre_completo' in resultado) {
+            setValue('nombre', resultado.nombre_completo)
+          } else {
+            setValue('nombre', resultado.razon_social)
+            if (resultado.direccion) setValue('direccion', resultado.direccion)
+          }
+        },
+      },
+    )
+  }
 
   // Persona jurídica solo puede documentarse con RUC: se fuerza al cambiar el tipo de persona
   useEffect(() => {
@@ -160,8 +185,31 @@ export function ClienteDialogo({ abierto, onAbierto, cliente }: Props) {
             </Select>
           </Campo>
 
-          <Campo etiqueta="Número de documento" obligatorio error={errores.numero_documento?.message}>
-            <Input {...register('numero_documento')} aria-invalid={Boolean(errores.numero_documento)} />
+          <Campo
+            etiqueta="Número de documento"
+            obligatorio
+            error={errores.numero_documento?.message}
+            ayuda={
+              tipoDocumento === 'DNI' || tipoDocumento === 'RUC'
+                ? 'Busca para completar el nombre con datos de RENIEC/SUNAT'
+                : undefined
+            }
+          >
+            <div className="flex gap-2">
+              <Input {...register('numero_documento')} aria-invalid={Boolean(errores.numero_documento)} />
+              {tipoDocumento === 'DNI' || tipoDocumento === 'RUC' ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={!largoValido || buscar.isPending}
+                  onClick={buscarDatos}
+                  aria-label="Buscar en RENIEC/SUNAT"
+                >
+                  {buscar.isPending ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                </Button>
+              ) : null}
+            </div>
           </Campo>
 
           <Campo etiqueta="Teléfono" error={errores.telefono?.message}>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -13,8 +13,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Campo } from '@/components/common/campo'
+import { OTRO_TITULO_MOVIMIENTO, TITULOS_MOVIMIENTO } from '@/lib/etiquetas'
 import { aInputFecha } from '@/lib/formato'
 import { useMovimientos } from './hooks'
 
@@ -34,16 +36,23 @@ interface Props {
 
 export function MovimientoDialogo({ abierto, onAbierto, expedienteUuid }: Props) {
   const { crear } = useMovimientos(expedienteUuid)
+  const [preset, setPreset] = useState<string>(TITULOS_MOVIMIENTO[0])
 
-  const { register, handleSubmit, reset, formState } = useForm<Formulario>({
+  const { register, handleSubmit, reset, setValue, formState } = useForm<Formulario>({
     resolver: zodResolver(esquema),
   })
 
   useEffect(() => {
     if (abierto) {
-      reset({ fecha: aInputFecha(new Date().toISOString()), titulo: '', detalle: '' })
+      setPreset(TITULOS_MOVIMIENTO[0])
+      reset({ fecha: aInputFecha(new Date().toISOString()), titulo: TITULOS_MOVIMIENTO[0], detalle: '' })
     }
   }, [abierto, reset])
+
+  const elegirPreset = (valor: string) => {
+    setPreset(valor)
+    setValue('titulo', valor === OTRO_TITULO_MOVIMIENTO ? '' : valor, { shouldValidate: true })
+  }
 
   const enviar = handleSubmit(async (valores) => {
     await crear.mutateAsync({ ...valores, detalle: valores.detalle || null })
@@ -63,13 +72,31 @@ export function MovimientoDialogo({ abierto, onAbierto, expedienteUuid }: Props)
             <Input type="date" {...register('fecha')} aria-invalid={Boolean(formState.errors.fecha)} />
           </Campo>
 
-          <Campo etiqueta="Título" obligatorio error={formState.errors.titulo?.message}>
-            <Input
-              placeholder="Auto admisorio, escrito presentado..."
-              {...register('titulo')}
-              aria-invalid={Boolean(formState.errors.titulo)}
-            />
+          <Campo etiqueta="Título" obligatorio>
+            <Select value={preset} onValueChange={elegirPreset}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TITULOS_MOVIMIENTO.map((titulo) => (
+                  <SelectItem key={titulo} value={titulo}>
+                    {titulo}
+                  </SelectItem>
+                ))}
+                <SelectItem value={OTRO_TITULO_MOVIMIENTO}>{OTRO_TITULO_MOVIMIENTO}</SelectItem>
+              </SelectContent>
+            </Select>
           </Campo>
+
+          {preset === OTRO_TITULO_MOVIMIENTO ? (
+            <Campo etiqueta="Describe el movimiento" obligatorio error={formState.errors.titulo?.message}>
+              <Input
+                placeholder="Escrito presentado, auto admisorio..."
+                {...register('titulo')}
+                aria-invalid={Boolean(formState.errors.titulo)}
+              />
+            </Campo>
+          ) : null}
 
           <Campo etiqueta="Detalle">
             <Textarea rows={4} {...register('detalle')} />

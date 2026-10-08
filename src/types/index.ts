@@ -29,6 +29,30 @@ export interface Tenant {
 
 export type TenantPayload = Omit<Tenant, 'id' | 'uuid' | 'logo_url' | 'activo'>
 
+export interface Configuracion {
+  correos_cc: string[]
+}
+
+export interface DniResultado {
+  numero_documento: string
+  nombres: string
+  apellido_paterno: string
+  apellido_materno: string
+  nombre_completo: string
+}
+
+export interface RucResultado {
+  numero_documento: string
+  razon_social: string
+  nombre_comercial: string | null
+  direccion: string | null
+  estado: string | null
+  condicion: string | null
+  departamento: string | null
+  provincia: string | null
+  distrito: string | null
+}
+
 export interface Usuario {
   id: number
   uuid: string
@@ -39,6 +63,7 @@ export interface Usuario {
   rol_id: number | null
   rol?: Rol
   tenant?: { id: number; uuid: string; nombre_comercial: string; logo_url: string | null } | null
+  email_verificado: boolean
   creado_en?: string
 }
 
@@ -93,6 +118,7 @@ export interface Expediente {
   materia: string | null
   juzgado: string | null
   estado: EstadoExpediente
+  anio: number
   fecha_inicio: string
   fecha_cierre: string | null
   descripcion: string | null
@@ -115,6 +141,7 @@ export interface ExpedientePayload {
   materia: string | null
   juzgado: string | null
   estado: EstadoExpediente
+  anio: number
   fecha_inicio: string
   fecha_cierre: string | null
   descripcion: string | null
@@ -135,6 +162,15 @@ export interface Consulta {
   creado_en?: string
 }
 
+export interface Etiqueta {
+  id: number
+  uuid: string
+  nombre: string
+  color: string
+}
+
+export type EtiquetaPayload = Omit<Etiqueta, 'id' | 'uuid'>
+
 export interface Documento {
   id: number
   uuid: string
@@ -146,10 +182,20 @@ export interface Documento {
   expediente?: { id: number; uuid: string; codigo: string; titulo: string }
   subido_por?: string | null
   consultas?: Consulta[]
+  etiquetas?: Etiqueta[]
   creado_en?: string
 }
 
-export type TipoEvento = 'audiencia' | 'vencimiento' | 'reunion' | 'otro'
+export type TipoEvento =
+  | 'audiencia'
+  | 'vencimiento'
+  | 'reunion'
+  | 'otro'
+  | 'plazo_absolver'
+  | 'plazo_apelar'
+  | 'actuacion_prueba'
+  | 'sentencia_1_instancia'
+  | 'sentencia_2_instancia'
 export type EstadoEvento = 'pendiente' | 'realizado' | 'cancelado'
 
 export interface Evento {
@@ -188,6 +234,8 @@ export interface Catalogos {
   clientes: { id: number; nombre: string; numero_documento: string }[]
   expedientes: { id: number; codigo: string; titulo: string }[]
   estados_expediente: string[]
+  tipos_evento: string[]
+  etiquetas: Etiqueta[]
 }
 
 export interface ResumenPanel {
@@ -233,3 +281,6 @@ export interface Extraccion {
   fechas_clave: FechaClaveExtraida[]
   creado_en?: string
 }
+
+// Igual que Extraccion pero del análisis de un PDF que todavía no se guardó como Documento
+export type ExtraccionPrevia = Omit<Extraccion, 'documento_id' | 'creado_en'>
