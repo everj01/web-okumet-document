@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { LogOut, Menu, Moon, Settings, Sun, User } from 'lucide-react'
+import { LogOut, Menu, Moon, Settings, Sparkles, Sun, User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,13 +13,16 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useAuth } from '@/features/auth/auth-context'
+import { useClaudeUso } from '@/features/claude-usage/hooks'
 import { useTema } from '@/hooks/use-tema'
 import { iniciales } from '@/lib/formato'
+import { cn } from '@/lib/utils'
 import { Sidebar } from './sidebar'
 
 export function Topbar() {
   const { usuario, rol, esAdmin, cerrarSesion } = useAuth()
   const { tema, alternar } = useTema()
+  const { data: claudeUso } = useClaudeUso()
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   return (
@@ -37,6 +40,24 @@ export function Topbar() {
       </Sheet>
 
       <div className="ml-auto flex items-center gap-2">
+        {claudeUso ? (
+          <Link
+            to="/perfil"
+            title="Uso de asistente IA este mes"
+            className={cn(
+              'hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors sm:flex',
+              claudeUso.usado >= claudeUso.limite
+                ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                : claudeUso.advertencia
+                  ? 'border-warning/30 bg-warning/10 text-warning'
+                  : 'border-border bg-secondary/60 text-muted-foreground hover:bg-secondary',
+            )}
+          >
+            <Sparkles className="size-3.5" />
+            {claudeUso.usado}/{claudeUso.limite}
+          </Link>
+        ) : null}
+
         <Button variant="ghost" size="icon" onClick={alternar} aria-label="Cambiar tema">
           {tema === 'dark' ? <Sun className="size-4.5" /> : <Moon className="size-4.5" />}
         </Button>
