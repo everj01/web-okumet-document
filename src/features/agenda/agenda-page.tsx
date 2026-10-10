@@ -201,6 +201,7 @@ export default function AgendaPage() {
                           size="icon-sm"
                           className="text-success hover:bg-success/10"
                           onClick={() => marcarRealizado.mutate(evento)}
+                          title="Marcar como realizada"
                           aria-label="Marcar como realizada"
                         >
                           <Check className="size-4" />
@@ -214,6 +215,7 @@ export default function AgendaPage() {
                           setEditando(evento)
                           setDialogoAbierto(true)
                         }}
+                        title="Editar"
                         aria-label="Editar"
                       >
                         <Pencil className="size-4" />
@@ -225,6 +227,7 @@ export default function AgendaPage() {
                           size="icon-sm"
                           className="text-destructive hover:bg-destructive/10"
                           onClick={() => pedirEliminar(evento)}
+                          title="Eliminar"
                           aria-label="Eliminar"
                         >
                           <Trash2 className="size-4" />

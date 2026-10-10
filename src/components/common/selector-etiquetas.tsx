@@ -90,6 +90,7 @@ export function SelectorEtiquetas({ disponibles, seleccionadas, onCambiar, onCre
                     key={opcion.valor}
                     type="button"
                     onClick={() => setColor(opcion.valor)}
+                    title={opcion.texto}
                     aria-label={opcion.texto}
                     className={cn(
                       'size-6 rounded-full ring-offset-1 transition-transform',

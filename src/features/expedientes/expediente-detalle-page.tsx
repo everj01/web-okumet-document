@@ -153,7 +153,7 @@ export default function ExpedienteDetallePage() {
       className: 'w-20 text-right',
       celda: (documento) => (
         <div className="flex justify-end gap-0.5">
-          <Button variant="ghost" size="icon-sm" asChild aria-label="Abrir documento">
+          <Button variant="ghost" size="icon-sm" asChild title="Abrir documento" aria-label="Abrir documento">
             <Link to={`/documentos/${documento.uuid}`}>
               <Eye className="size-4" />
             </Link>
@@ -164,6 +164,7 @@ export default function ExpedienteDetallePage() {
               size="icon-sm"
               className="text-destructive hover:bg-destructive/10"
               onClick={() => pedirEliminarDocumento(documento)}
+              title="Eliminar documento"
               aria-label="Eliminar documento"
             >
               <Trash2 className="size-4" />
@@ -282,6 +283,7 @@ export default function ExpedienteDetallePage() {
                           size="icon-sm"
                           className="text-destructive hover:bg-destructive/10"
                           onClick={() => pedirEliminarMovimiento(movimiento.uuid)}
+                          title="Eliminar movimiento"
                           aria-label="Eliminar movimiento"
                         >
                           <Trash2 className="size-4" />

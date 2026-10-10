@@ -98,7 +98,7 @@ export default function DocumentosPage() {
       encabezado: '',
       className: 'w-12 text-right',
       celda: (documento) => (
-        <Button variant="ghost" size="icon-sm" asChild aria-label="Abrir documento">
+        <Button variant="ghost" size="icon-sm" asChild title="Abrir documento" aria-label="Abrir documento">
           <Link to={`/documentos/${documento.uuid}`}>
             <ArrowRight className="size-4" />
           </Link>

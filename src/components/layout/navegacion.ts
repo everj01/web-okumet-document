@@ -1,4 +1,4 @@
-import { Building2, CalendarClock, FileText, FolderOpen, LayoutDashboard, Users, UserCog } from 'lucide-react'
+import { BookOpen, Building2, CalendarClock, FileText, FolderOpen, LayoutDashboard, Users, UserCog } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface ItemNavegacion {
@@ -23,6 +23,10 @@ export const GRUPOS: { titulo: string; items: ItemNavegacion[] }[] = [
       { etiqueta: 'Expedientes', ruta: '/expedientes', icono: FolderOpen },
       { etiqueta: 'Documentos', ruta: '/documentos', icono: FileText },
     ],
+  },
+  {
+    titulo: 'Recursos',
+    items: [{ etiqueta: 'Biblioteca jurídica', ruta: '/biblioteca', icono: BookOpen }],
   },
   {
     titulo: 'Administración',

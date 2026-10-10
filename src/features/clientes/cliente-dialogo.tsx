@@ -204,6 +204,7 @@ export function ClienteDialogo({ abierto, onAbierto, cliente }: Props) {
                   size="icon"
                   disabled={!largoValido || buscar.isPending}
                   onClick={buscarDatos}
+                  title="Buscar en RENIEC/SUNAT"
                   aria-label="Buscar en RENIEC/SUNAT"
                 >
                   {buscar.isPending ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}

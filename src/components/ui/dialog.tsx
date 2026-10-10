@@ -41,7 +41,10 @@ function DialogContent({
       >
         {children}
         {ocultarCierre ? null : (
-          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-md p-1 text-muted-foreground opacity-70 transition hover:bg-secondary hover:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none">
+          <DialogPrimitive.Close
+            title="Cerrar"
+            className="absolute top-4 right-4 rounded-md p-1 text-muted-foreground opacity-70 transition hover:bg-secondary hover:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none"
+          >
             <X className="size-4" />
             <span className="sr-only">Cerrar</span>
           </DialogPrimitive.Close>

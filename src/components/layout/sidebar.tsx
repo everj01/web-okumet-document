@@ -101,6 +101,7 @@ export function Sidebar({ onNavegar, colapsado = false, onAlternarColapso }: Pro
             type="button"
             onClick={onAlternarColapso}
             className="flex items-center gap-2 px-5 py-3 text-xs text-sidebar-foreground/60 transition-colors hover:text-white"
+            title={colapsado ? 'Expandir menú' : 'Reducir menú'}
             aria-label={colapsado ? 'Expandir menú' : 'Reducir menú'}
           >
             {colapsado ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}

@@ -234,7 +234,13 @@ export default function DocumentoDetallePage() {
                   placeholder="¿Qué monto se reclama?"
                   disabled={sinTexto}
                 />
-                <Button type="submit" size="icon" disabled={sinTexto || preguntar.isPending} aria-label="Preguntar">
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={sinTexto || preguntar.isPending}
+                  title="Preguntar"
+                  aria-label="Preguntar"
+                >
                   {preguntar.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                 </Button>
               </form>
@@ -265,6 +271,7 @@ export default function DocumentoDetallePage() {
                             key={numero}
                             type="button"
                             onClick={() => setPagina(numero)}
+                            title={`Ver página ${numero}`}
                             className="rounded-full border border-border bg-card px-2 py-0.5 text-xs transition-colors hover:border-ring hover:bg-secondary"
                           >
                             {numero}

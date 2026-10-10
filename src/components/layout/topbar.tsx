@@ -14,6 +14,7 @@ import {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useAuth } from '@/features/auth/auth-context'
 import { useClaudeUso } from '@/features/claude-usage/hooks'
+import { NotificacionesMenu } from '@/features/notificaciones/notificaciones-menu'
 import { useTema } from '@/hooks/use-tema'
 import { iniciales } from '@/lib/formato'
 import { cn } from '@/lib/utils'
@@ -29,7 +30,7 @@ export function Topbar() {
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur lg:px-6">
       <Sheet open={menuAbierto} onOpenChange={setMenuAbierto}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Abrir menú">
+          <Button variant="ghost" size="icon" className="lg:hidden" title="Abrir menú" aria-label="Abrir menú">
             <Menu className="size-5" />
           </Button>
         </SheetTrigger>
@@ -58,7 +59,9 @@ export function Topbar() {
           </Link>
         ) : null}
 
-        <Button variant="ghost" size="icon" onClick={alternar} aria-label="Cambiar tema">
+        <NotificacionesMenu />
+
+        <Button variant="ghost" size="icon" onClick={alternar} title="Cambiar tema" aria-label="Cambiar tema">
           {tema === 'dark' ? <Sun className="size-4.5" /> : <Moon className="size-4.5" />}
         </Button>
 

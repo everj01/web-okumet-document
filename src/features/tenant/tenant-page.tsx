@@ -85,6 +85,7 @@ export default function TenantPage() {
                 type="button"
                 onClick={() => inputLogoRef.current?.click()}
                 className="group relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-dashed border-border bg-secondary text-muted-foreground transition-colors hover:border-ring"
+                title="Cambiar logo"
                 aria-label="Cambiar logo"
               >
                 {tenant?.logo_url ? (

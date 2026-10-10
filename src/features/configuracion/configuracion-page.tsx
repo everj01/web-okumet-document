@@ -99,6 +99,7 @@ export default function ConfiguracionPage() {
                         size="icon"
                         className="text-destructive hover:bg-destructive/10"
                         onClick={() => remove(indice)}
+                        title="Quitar correo"
                         aria-label="Quitar correo"
                       >
                         <Trash2 className="size-4" />

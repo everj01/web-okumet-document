@@ -110,32 +110,31 @@ export default function RegistroPage() {
             ) : null}
 
             <form onSubmit={enviar} className="space-y-4" noValidate>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Campo
-                etiqueta="RUC"
-                obligatorio
-                error={errors.ruc?.message}
-                ayuda="Busca para completar el nombre con datos de SUNAT"
-              >
-                <div className="flex gap-2">
-                  <Input maxLength={11} aria-invalid={Boolean(errors.ruc)} {...register('ruc')} />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    disabled={!rucValido || buscarRuc.isPending}
-                    onClick={buscarDatos}
-                    aria-label="Buscar en SUNAT"
-                  >
-                    {buscarRuc.isPending ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
-                  </Button>
-                </div>
-              </Campo>
+            <Campo
+              etiqueta="RUC"
+              obligatorio
+              error={errors.ruc?.message}
+              ayuda="Busca para completar el nombre con datos de SUNAT"
+            >
+              <div className="flex gap-2">
+                <Input maxLength={11} aria-invalid={Boolean(errors.ruc)} {...register('ruc')} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={!rucValido || buscarRuc.isPending}
+                  onClick={buscarDatos}
+                  title="Buscar en SUNAT"
+                  aria-label="Buscar en SUNAT"
+                >
+                  {buscarRuc.isPending ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                </Button>
+              </div>
+            </Campo>
 
-              <Campo etiqueta="Nombre del negocio" error={errors.nombre_comercial?.message}>
-                <Input aria-invalid={Boolean(errors.nombre_comercial)} {...register('nombre_comercial')} />
-              </Campo>
-            </div>
+            <Campo etiqueta="Nombre del negocio" error={errors.nombre_comercial?.message}>
+              <Input aria-invalid={Boolean(errors.nombre_comercial)} {...register('nombre_comercial')} />
+            </Campo>
 
             <Campo etiqueta="Tu nombre" error={errors.name?.message}>
               <Input aria-invalid={Boolean(errors.name)} {...register('name')} />
@@ -166,6 +165,7 @@ export default function RegistroPage() {
                     size="icon-sm"
                     className="absolute top-1/2 right-1 -translate-y-1/2"
                     onClick={() => setVerClave((visible) => !visible)}
+                    title={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     aria-label={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {verClave ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

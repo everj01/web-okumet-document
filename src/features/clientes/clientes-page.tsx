@@ -110,12 +110,18 @@ export default function ClientesPage() {
       className: 'w-28 text-right',
       celda: (cliente) => (
         <div className="flex justify-end gap-0.5">
-          <Button variant="ghost" size="icon-sm" asChild aria-label="Ver historial">
+          <Button variant="ghost" size="icon-sm" asChild title="Ver historial" aria-label="Ver historial">
             <Link to={`/clientes/${cliente.uuid}`}>
               <Eye className="size-4" />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon-sm" onClick={() => abrirEdicion(cliente)} aria-label="Editar">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => abrirEdicion(cliente)}
+            title="Editar"
+            aria-label="Editar"
+          >
             <Pencil className="size-4" />
           </Button>
           {puedeEliminar ? (
@@ -124,6 +130,7 @@ export default function ClientesPage() {
               size="icon-sm"
               className="text-destructive hover:bg-destructive/10"
               onClick={() => pedirEliminar(cliente)}
+              title="Eliminar"
               aria-label="Eliminar"
             >
               <Trash2 className="size-4" />

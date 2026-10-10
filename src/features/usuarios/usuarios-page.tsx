@@ -86,6 +86,7 @@ export default function UsuariosPage() {
               setEditando(usuario)
               setDialogoAbierto(true)
             }}
+            title="Editar"
             aria-label="Editar"
           >
             <Pencil className="size-4" />
@@ -95,6 +96,7 @@ export default function UsuariosPage() {
             size="icon-sm"
             className="text-destructive hover:bg-destructive/10"
             onClick={() => pedirEliminar(usuario)}
+            title="Eliminar"
             aria-label="Eliminar"
           >
             <Trash2 className="size-4" />

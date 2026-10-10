@@ -27,6 +27,7 @@ const ExpedienteDetallePage = lazy(() => import('./features/expedientes/expedien
 const DocumentosPage = lazy(() => import('./features/documentos/documentos-page'))
 const DocumentoDetallePage = lazy(() => import('./features/documentos/documento-detalle-page'))
 const AgendaPage = lazy(() => import('./features/agenda/agenda-page'))
+const BibliotecaPage = lazy(() => import('./features/biblioteca/biblioteca-page'))
 const UsuariosPage = lazy(() => import('./features/usuarios/usuarios-page'))
 const PerfilPage = lazy(() => import('./features/perfil/perfil-page'))
 const TenantPage = lazy(() => import('./features/tenant/tenant-page'))
@@ -101,6 +102,7 @@ export function App() {
           <Route path="/documentos" element={<DocumentosPage />} />
           <Route path="/documentos/:uuid" element={<DocumentoDetallePage />} />
           <Route path="/agenda" element={<AgendaPage />} />
+          <Route path="/biblioteca" element={<BibliotecaPage />} />
           <Route path="/perfil" element={<PerfilPage />} />
 
           <Route element={<RutaSoloAdmin />}>

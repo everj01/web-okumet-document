@@ -69,7 +69,7 @@ export default function SaShell() {
           <p className="truncate text-sm text-muted-foreground lg:hidden">Sistema · Soporte</p>
 
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={alternar} aria-label="Cambiar tema">
+            <Button variant="ghost" size="icon" onClick={alternar} title="Cambiar tema" aria-label="Cambiar tema">
               {tema === 'dark' ? <Sun className="size-4.5" /> : <Moon className="size-4.5" />}
             </Button>
             <span className="hidden text-sm text-muted-foreground sm:inline">{superAdmin?.email}</span>

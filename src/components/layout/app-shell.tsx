@@ -3,6 +3,7 @@ import { Outlet } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCanalAgenda } from '@/features/agenda/use-canal-agenda'
 import { VerificacionGate } from '@/features/auth/verificacion-gate'
+import { useCanalUsuario } from '@/features/notificaciones/use-canal-usuario'
 import { useSidebarColapsado } from '@/hooks/use-sidebar-colapsado'
 import { cn } from '@/lib/utils'
 import { Sidebar } from './sidebar'
@@ -19,6 +20,7 @@ function CargandoVista() {
 
 export function AppShell() {
   useCanalAgenda()
+  useCanalUsuario()
   const { colapsado, alternar } = useSidebarColapsado()
 
   return (

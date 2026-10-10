@@ -293,6 +293,20 @@ export interface ClaudeUso {
   periodo: string
 }
 
+export interface Notificacion {
+  id: number
+  uuid: string
+  tipo: string
+  titulo: string
+  mensaje: string
+  leida: boolean
+  creado_en: string
+}
+
+export interface ResumenNotificaciones {
+  no_leidas: number
+}
+
 export type EstadoExportacion = 'pendiente' | 'procesando' | 'completado' | 'fallido'
 
 export interface Exportacion {

@@ -127,6 +127,7 @@ function TablaDatos<T>({
               size="icon-sm"
               disabled={paginacion.pagina <= 1}
               onClick={() => paginacion.onCambiar(paginacion.pagina - 1)}
+              title="Página anterior"
               aria-label="Página anterior"
             >
               <ChevronLeft className="size-4" />
@@ -139,6 +140,7 @@ function TablaDatos<T>({
               size="icon-sm"
               disabled={paginacion.pagina >= ultimaPagina}
               onClick={() => paginacion.onCambiar(paginacion.pagina + 1)}
+              title="Página siguiente"
               aria-label="Página siguiente"
             >
               <ChevronRight className="size-4" />

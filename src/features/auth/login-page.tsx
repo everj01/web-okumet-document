@@ -120,6 +120,7 @@ export default function LoginPage() {
                     size="icon-sm"
                     className="absolute top-1/2 right-1 -translate-y-1/2"
                     onClick={() => setVerClave((visible) => !visible)}
+                    title={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     aria-label={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {verClave ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

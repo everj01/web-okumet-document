@@ -128,7 +128,7 @@ export default function ExpedientesPage() {
           <div className="flex justify-end gap-0.5">
             {!clienteInactivo ? (
               <>
-                <Button variant="ghost" size="icon-sm" asChild aria-label="Ver expediente">
+                <Button variant="ghost" size="icon-sm" asChild title="Ver expediente" aria-label="Ver expediente">
                   <Link to={`/expedientes/${expediente.uuid}`}>
                     <Eye className="size-4" />
                   </Link>
@@ -140,6 +140,7 @@ export default function ExpedientesPage() {
                     setEditando(expediente)
                     setDialogoAbierto(true)
                   }}
+                  title="Editar"
                   aria-label="Editar"
                 >
                   <Pencil className="size-4" />
@@ -152,6 +153,7 @@ export default function ExpedientesPage() {
                 size="icon-sm"
                 className="text-destructive hover:bg-destructive/10"
                 onClick={() => pedirEliminar(expediente)}
+                title="Eliminar"
                 aria-label="Eliminar"
               >
                 <Trash2 className="size-4" />

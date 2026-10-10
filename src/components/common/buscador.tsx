@@ -26,6 +26,7 @@ export function Buscador({ valor, onCambiar, placeholder = 'Buscar...', classNam
           size="icon-sm"
           className="absolute top-1/2 right-1 -translate-y-1/2"
           onClick={() => onCambiar('')}
+          title="Limpiar búsqueda"
           aria-label="Limpiar búsqueda"
         >
           <X className="size-4" />

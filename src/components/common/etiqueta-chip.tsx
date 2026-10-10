@@ -18,6 +18,7 @@ export function EtiquetaChip({ etiqueta, onQuitar }: Props) {
           type="button"
           onClick={onQuitar}
           className="-mr-0.5 rounded-full p-0.5 transition-colors hover:bg-black/10"
+          title={`Quitar etiqueta ${etiqueta.nombre}`}
           aria-label={`Quitar etiqueta ${etiqueta.nombre}`}
         >
           <X className="size-3" />
