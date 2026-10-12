@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Check, Loader2, Sparkles, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,13 +20,29 @@ import { Textarea } from '@/components/ui/textarea'
 import { Campo } from '@/components/common/campo'
 import { Combobox } from '@/components/common/combobox'
 import { useCatalogos } from '@/features/catalogos/use-catalogos'
+import { ClienteDialogo } from '@/features/clientes/cliente-dialogo'
 import { documentosApi } from '@/features/documentos/api'
 import { useExtraccionPrevia } from '@/features/documentos/hooks'
 import { mensajeDeError } from '@/lib/api'
 import { ESTADOS_EXPEDIENTE, opciones } from '@/lib/etiquetas'
 import { aInputFecha, pesoLegible } from '@/lib/formato'
-import type { EstadoExpediente, Expediente } from '@/types'
+import { cn } from '@/lib/utils'
+import type { EstadoExpediente, Expediente, ParteExtraida } from '@/types'
 import { useGuardarExpediente } from './hooks'
+
+// sin tildes, sin mayúsculas ni espacios de más: evita que un acento o un espacio extra rompa la coincidencia
+function normalizar(texto: string) {
+  return texto
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .trim()
+    .toLowerCase()
+}
+
+// la IA siempre manda solo dígitos; el cliente pudo registrarse con espacios o guiones en el número
+function soloDigitos(texto: string) {
+  return texto.replace(/\D/g, '')
+}
 
 const esquema = z
   .object({
@@ -65,6 +81,8 @@ export function ExpedienteDialogo({ abierto, onAbierto, expediente, clienteFijo 
   const queryClient = useQueryClient()
   const [archivoPdf, setArchivoPdf] = useState<File | null>(null)
   const [subiendoPdf, setSubiendoPdf] = useState(false)
+  const [partesDetectadas, setPartesDetectadas] = useState<ParteExtraida[]>([])
+  const [nuevoCliente, setNuevoCliente] = useState<{ nombre: string; numero_documento?: string } | null>(null)
 
   const { register, handleSubmit, reset, setValue, watch, formState } = useForm<Formulario>({
     resolver: zodResolver(esquema),
@@ -74,6 +92,7 @@ export function ExpedienteDialogo({ abierto, onAbierto, expediente, clienteFijo 
     if (!abierto) return
 
     setArchivoPdf(null)
+    setPartesDetectadas([])
     reset({
       codigo: expediente?.codigo ?? '',
       titulo: expediente?.titulo ?? '',
@@ -91,12 +110,17 @@ export function ExpedienteDialogo({ abierto, onAbierto, expediente, clienteFijo 
 
   const elegirPdf = (archivo: File | null) => {
     setArchivoPdf(archivo)
+    setPartesDetectadas([])
     if (!archivo) return
 
     extraerPrevia.mutate(archivo, {
       onSuccess: (extraccion) => {
         const campos = extraccion.campos
         let detectados = 0
+
+        // una por nombre: el mismo interviniente puede aparecer citado varias veces en el documento
+        const partesUnicas = new Map(extraccion.partes.map((parte) => [normalizar(parte.nombre), parte]))
+        setPartesDetectadas(Array.from(partesUnicas.values()))
 
         if (campos.codigo) {
           setValue('codigo', campos.codigo.valor, { shouldValidate: true })
@@ -125,6 +149,25 @@ export function ExpedienteDialogo({ abierto, onAbierto, expediente, clienteFijo 
         )
       },
     })
+  }
+
+  // primero por documento (más confiable), si no aparece o no hay match, por nombre
+  const elegirParte = (parte: ParteExtraida) => {
+    const clientes = catalogos?.clientes ?? []
+
+    const match = parte.numero_documento
+      ? clientes.find((c) => soloDigitos(c.numero_documento) === parte.numero_documento)
+      : undefined
+
+    const encontrado = match ?? clientes.find((c) => normalizar(c.nombre) === normalizar(parte.nombre))
+
+    if (encontrado) {
+      setValue('cliente_id', encontrado.id, { shouldValidate: true })
+      toast.success('Cliente seleccionado', { description: encontrado.nombre })
+      return
+    }
+
+    setNuevoCliente({ nombre: parte.nombre, numero_documento: parte.numero_documento ?? undefined })
   }
 
   const fechaInicio = watch('fecha_inicio')
@@ -171,127 +214,182 @@ export function ExpedienteDialogo({ abierto, onAbierto, expediente, clienteFijo 
   const errores = formState.errors
 
   return (
-    <Dialog open={abierto} onOpenChange={onAbierto}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{expediente ? 'Editar expediente' : 'Nuevo expediente'}</DialogTitle>
-          <DialogDescription>El código identifica el caso dentro del estudio y en el juzgado.</DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={abierto} onOpenChange={onAbierto}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{expediente ? 'Editar expediente' : 'Nuevo expediente'}</DialogTitle>
+            <DialogDescription>El código identifica el caso dentro del estudio y en el juzgado.</DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={enviar} className="grid gap-4 sm:grid-cols-2" noValidate>
-          {!expediente ? (
-            <Campo etiqueta="Autocompletar desde un PDF (opcional)" className="sm:col-span-2">
-              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-left transition-colors hover:border-ring hover:bg-secondary/50">
-                {extraerPrevia.isPending ? (
-                  <Loader2 className="size-5 shrink-0 animate-spin text-muted-foreground" />
-                ) : (
-                  <Sparkles className="size-5 shrink-0 text-accent" />
-                )}
-                <span className="min-w-0 flex-1 text-sm">
-                  {archivoPdf ? (
-                    <>
-                      <span className="font-medium">{archivoPdf.name}</span>
-                      <span className="text-muted-foreground"> · {pesoLegible(archivoPdf.size)}</span>
-                    </>
+          <form onSubmit={enviar} className="grid gap-4 sm:grid-cols-2" noValidate>
+            {!expediente ? (
+              <Campo etiqueta="Autocompletar desde un PDF (opcional)" className="sm:col-span-2">
+                <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-left transition-colors hover:border-ring hover:bg-secondary/50">
+                  {extraerPrevia.isPending ? (
+                    <Loader2 className="size-5 shrink-0 animate-spin text-muted-foreground" />
                   ) : (
-                    <span className="text-muted-foreground">
-                      Sube el PDF de la demanda y completamos el código, asunto, materia, juzgado y fecha por ti
-                    </span>
+                    <Sparkles className="size-5 shrink-0 text-accent" />
                   )}
-                </span>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  className="sr-only"
-                  disabled={extraerPrevia.isPending}
-                  onChange={(evento) => elegirPdf(evento.target.files?.[0] ?? null)}
-                />
-              </label>
+                  <span className="min-w-0 flex-1 text-sm">
+                    {archivoPdf ? (
+                      <>
+                        <span className="font-medium">{archivoPdf.name}</span>
+                        <span className="text-muted-foreground"> · {pesoLegible(archivoPdf.size)}</span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Sube el PDF de la demanda y completamos el código, asunto, materia, juzgado y fecha por ti
+                      </span>
+                    )}
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    className="sr-only"
+                    disabled={extraerPrevia.isPending}
+                    onChange={(evento) => elegirPdf(evento.target.files?.[0] ?? null)}
+                  />
+                </label>
+              </Campo>
+            ) : null}
+
+            <Campo etiqueta="Código" obligatorio error={errores.codigo?.message}>
+              <Input placeholder="EXP-2026-001" {...register('codigo')} aria-invalid={Boolean(errores.codigo)} />
             </Campo>
-          ) : null}
 
-          <Campo etiqueta="Código" obligatorio error={errores.codigo?.message}>
-            <Input placeholder="EXP-2026-001" {...register('codigo')} aria-invalid={Boolean(errores.codigo)} />
-          </Campo>
+            <Campo etiqueta="Año" obligatorio error={errores.anio?.message}>
+              <Input type="number" {...register('anio')} aria-invalid={Boolean(errores.anio)} />
+            </Campo>
 
-          <Campo etiqueta="Año" obligatorio error={errores.anio?.message}>
-            <Input type="number" {...register('anio')} aria-invalid={Boolean(errores.anio)} />
-          </Campo>
+            <Campo etiqueta="Estado">
+              <Select value={watch('estado')} onValueChange={(valor) => setValue('estado', valor as EstadoExpediente)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ESTADOS.map((estado) => (
+                    <SelectItem key={estado.valor} value={estado.valor}>
+                      {estado.texto}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Campo>
 
-          <Campo etiqueta="Estado">
-            <Select value={watch('estado')} onValueChange={(valor) => setValue('estado', valor as EstadoExpediente)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ESTADOS.map((estado) => (
-                  <SelectItem key={estado.valor} value={estado.valor}>
-                    {estado.texto}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Campo>
+            <Campo etiqueta="Asunto" obligatorio className="sm:col-span-2" error={errores.titulo?.message}>
+              <Input {...register('titulo')} aria-invalid={Boolean(errores.titulo)} />
+            </Campo>
 
-          <Campo etiqueta="Asunto" obligatorio className="sm:col-span-2" error={errores.titulo?.message}>
-            <Input {...register('titulo')} aria-invalid={Boolean(errores.titulo)} />
-          </Campo>
+            {partesDetectadas.length ? (
+              <Campo etiqueta="¿Quién es tu cliente?" className="sm:col-span-2" ayuda="Detectado en el PDF">
+                <div className="flex flex-wrap gap-2">
+                  {partesDetectadas.map((parte) => {
+                    const esCliente = (catalogos?.clientes ?? []).some(
+                      (c) =>
+                        c.id === watch('cliente_id') &&
+                        (soloDigitos(c.numero_documento) === parte.numero_documento ||
+                          normalizar(c.nombre) === normalizar(parte.nombre)),
+                    )
 
-          <Campo etiqueta="Cliente" obligatorio error={errores.cliente_id?.message}>
-            <Combobox
-              opciones={(catalogos?.clientes ?? []).map((cliente) => ({
-                valor: cliente.id,
-                texto: cliente.nombre,
-                detalle: cliente.numero_documento,
-              }))}
-              valor={watch('cliente_id') || null}
-              onCambiar={(valor) => setValue('cliente_id', Number(valor ?? 0), { shouldValidate: true })}
-              placeholder="Selecciona un cliente"
-              invalido={Boolean(errores.cliente_id)}
-            />
-          </Campo>
+                    return (
+                      <button
+                        key={parte.nombre}
+                        type="button"
+                        onClick={() => elegirParte(parte)}
+                        className={cn(
+                          'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-left text-sm transition-colors',
+                          esCliente
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border hover:border-ring hover:bg-secondary/50',
+                        )}
+                      >
+                        {esCliente ? <Check className="size-3.5 shrink-0" /> : null}
+                        <span className="font-medium">{parte.nombre}</span>
+                        <span className="text-xs text-muted-foreground capitalize">{parte.rol}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </Campo>
+            ) : null}
 
-          <Campo etiqueta="Abogado a cargo">
-            <Combobox
-              opciones={(catalogos?.responsables ?? []).map((usuario) => ({ valor: usuario.id, texto: usuario.name }))}
-              valor={watch('abogado_id')}
-              onCambiar={(valor) => setValue('abogado_id', valor === null ? null : Number(valor))}
-              placeholder="Sin asignar"
-              permitirVacio
-            />
-          </Campo>
+            <Campo etiqueta="Cliente" obligatorio className="sm:col-span-2" error={errores.cliente_id?.message}>
+              <div className="flex gap-2">
+                <Combobox
+                  className="flex-1"
+                  opciones={(catalogos?.clientes ?? []).map((cliente) => ({
+                    valor: cliente.id,
+                    texto: cliente.nombre,
+                    detalle: cliente.numero_documento,
+                  }))}
+                  valor={watch('cliente_id') || null}
+                  onCambiar={(valor) => setValue('cliente_id', Number(valor ?? 0), { shouldValidate: true })}
+                  placeholder="Selecciona un cliente"
+                  invalido={Boolean(errores.cliente_id)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setNuevoCliente({ nombre: '' })}
+                  title="Registrar cliente nuevo"
+                  aria-label="Registrar cliente nuevo"
+                >
+                  <UserPlus className="size-4" />
+                </Button>
+              </div>
+            </Campo>
 
-          <Campo etiqueta="Materia">
-            <Input placeholder="Civil, Penal, Familia..." {...register('materia')} />
-          </Campo>
+            <Campo etiqueta="Abogado a cargo">
+              <Combobox
+                opciones={(catalogos?.responsables ?? []).map((usuario) => ({ valor: usuario.id, texto: usuario.name }))}
+                valor={watch('abogado_id')}
+                onCambiar={(valor) => setValue('abogado_id', valor === null ? null : Number(valor))}
+                placeholder="Sin asignar"
+                permitirVacio
+              />
+            </Campo>
 
-          <Campo etiqueta="Juzgado">
-            <Input {...register('juzgado')} />
-          </Campo>
+            <Campo etiqueta="Materia">
+              <Input placeholder="Civil, Penal, Familia..." {...register('materia')} />
+            </Campo>
 
-          <Campo etiqueta="Fecha de inicio" obligatorio error={errores.fecha_inicio?.message}>
-            <Input type="date" {...register('fecha_inicio')} aria-invalid={Boolean(errores.fecha_inicio)} />
-          </Campo>
+            <Campo etiqueta="Juzgado">
+              <Input {...register('juzgado')} />
+            </Campo>
 
-          <Campo etiqueta="Fecha de cierre" error={errores.fecha_cierre?.message}>
-            <Input type="date" {...register('fecha_cierre')} aria-invalid={Boolean(errores.fecha_cierre)} />
-          </Campo>
+            <Campo etiqueta="Fecha de inicio" obligatorio error={errores.fecha_inicio?.message}>
+              <Input type="date" {...register('fecha_inicio')} aria-invalid={Boolean(errores.fecha_inicio)} />
+            </Campo>
 
-          <Campo etiqueta="Descripción" className="sm:col-span-2">
-            <Textarea rows={3} {...register('descripcion')} />
-          </Campo>
+            <Campo etiqueta="Fecha de cierre" error={errores.fecha_cierre?.message}>
+              <Input type="date" {...register('fecha_cierre')} aria-invalid={Boolean(errores.fecha_cierre)} />
+            </Campo>
 
-          <DialogFooter className="sm:col-span-2">
-            <Button type="button" variant="outline" onClick={() => onAbierto(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={guardar.isPending || subiendoPdf}>
-              {guardar.isPending || subiendoPdf ? <Loader2 className="size-4 animate-spin" /> : null}
-              Guardar
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <Campo etiqueta="Descripción" className="sm:col-span-2">
+              <Textarea rows={3} {...register('descripcion')} />
+            </Campo>
+
+            <DialogFooter className="sm:col-span-2">
+              <Button type="button" variant="outline" onClick={() => onAbierto(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={guardar.isPending || subiendoPdf}>
+                {guardar.isPending || subiendoPdf ? <Loader2 className="size-4 animate-spin" /> : null}
+                Guardar
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ClienteDialogo
+        abierto={nuevoCliente !== null}
+        onAbierto={(valor) => !valor && setNuevoCliente(null)}
+        datosIniciales={nuevoCliente ?? undefined}
+        onGuardado={(cliente) => setValue('cliente_id', cliente.id, { shouldValidate: true })}
+      />
+    </>
   )
 }

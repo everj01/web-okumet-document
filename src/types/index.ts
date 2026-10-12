@@ -264,6 +264,7 @@ export interface CampoExtraido {
 export interface ParteExtraida {
   nombre: string
   rol: string
+  numero_documento: string | null
   pagina: number | null
 }
 

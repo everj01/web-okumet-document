@@ -61,9 +61,12 @@ interface Props {
   abierto: boolean
   onAbierto: (abierto: boolean) => void
   cliente?: Cliente | null
+  // solo aplica al crear: prellena el formulario (ej. datos detectados de un PDF)
+  datosIniciales?: { nombre?: string; numero_documento?: string }
+  onGuardado?: (cliente: Cliente) => void
 }
 
-export function ClienteDialogo({ abierto, onAbierto, cliente }: Props) {
+export function ClienteDialogo({ abierto, onAbierto, cliente, datosIniciales, onGuardado }: Props) {
   const guardar = useGuardarCliente(cliente?.uuid)
   const buscar = useBuscarDniRuc()
 
@@ -121,12 +124,16 @@ export function ClienteDialogo({ abierto, onAbierto, cliente }: Props) {
             notas: cliente.notas ?? '',
             activo: cliente.activo,
           }
-        : VACIO,
+        : {
+            ...VACIO,
+            nombre: datosIniciales?.nombre ?? '',
+            numero_documento: datosIniciales?.numero_documento ?? '',
+          },
     )
-  }, [abierto, cliente, reset])
+  }, [abierto, cliente, datosIniciales, reset])
 
   const enviar = handleSubmit(async (valores) => {
-    await guardar.mutateAsync({
+    const guardado = await guardar.mutateAsync({
       ...valores,
       email: valores.email || null,
       telefono: valores.telefono || null,
@@ -134,6 +141,7 @@ export function ClienteDialogo({ abierto, onAbierto, cliente }: Props) {
       notas: valores.notas || null,
     })
 
+    onGuardado?.(guardado)
     onAbierto(false)
   })
 
