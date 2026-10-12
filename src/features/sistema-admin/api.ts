@@ -78,7 +78,18 @@ export interface DashboardSA {
   expedientes_por_estado: { estado: string; total: number }[]
 }
 
-export type AccionLog = 'login' | 'login_fallido' | 'logout' | 'creado' | 'actualizado' | 'eliminado' | 'exportacion' | 'reporte' | 'super_admin'
+export type AccionLog =
+  | 'login'
+  | 'login_fallido'
+  | 'logout'
+  | 'creado'
+  | 'actualizado'
+  | 'eliminado'
+  | 'exportacion'
+  | 'reporte'
+  | 'super_admin'
+  | 'password_olvidada'
+  | 'password_restablecida'
 export type ModuloLog = 'auth' | 'clientes' | 'expedientes' | 'documentos' | 'usuarios' | 'eventos' | 'exportaciones' | 'reportes' | 'sistema_admin'
 
 export interface LogAuditoria {

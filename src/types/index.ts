@@ -59,6 +59,10 @@ export interface Usuario {
   name: string
   email: string
   telefono: string | null
+  dni: string | null
+  colegiatura: string | null
+  abogado_habilitado: boolean | null
+  foto_url: string | null
   activo: boolean
   rol_id: number | null
   rol?: Rol
@@ -73,6 +77,8 @@ export interface UsuarioPayload {
   password?: string
   rol_id: number
   telefono: string | null
+  dni: string | null
+  colegiatura: string | null
   activo: boolean
 }
 

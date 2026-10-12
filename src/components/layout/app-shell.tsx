@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useCanalAgenda } from '@/features/agenda/use-canal-agenda'
 import { VerificacionGate } from '@/features/auth/verificacion-gate'
 import { useCanalUsuario } from '@/features/notificaciones/use-canal-usuario'
+import { CompletarDatosAlerta } from '@/features/perfil/completar-datos-alerta'
 import { useSidebarColapsado } from '@/hooks/use-sidebar-colapsado'
 import { cn } from '@/lib/utils'
 import { Sidebar } from './sidebar'
@@ -26,6 +27,7 @@ export function AppShell() {
   return (
     <div className="flex min-h-dvh">
       <VerificacionGate />
+      <CompletarDatosAlerta />
       <aside
         className={cn(
           'hidden shrink-0 transition-[width] duration-200 lg:block',

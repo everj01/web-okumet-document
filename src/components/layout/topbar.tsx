@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { LogOut, Menu, Moon, Settings, Sparkles, Sun, User } from 'lucide-react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,11 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { AvatarUsuario } from '@/components/common/avatar-usuario'
 import { useAuth } from '@/features/auth/auth-context'
 import { useClaudeUso } from '@/features/claude-usage/hooks'
 import { NotificacionesMenu } from '@/features/notificaciones/notificaciones-menu'
 import { useTema } from '@/hooks/use-tema'
-import { iniciales } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { Sidebar } from './sidebar'
 
@@ -68,9 +67,7 @@ export function Topbar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2.5 rounded-full p-1 pr-2 transition-colors hover:bg-secondary">
-              <Avatar>
-                <AvatarFallback>{iniciales(usuario?.name)}</AvatarFallback>
-              </Avatar>
+              <AvatarUsuario fotoUrl={usuario?.foto_url} nombre={usuario?.name} />
               <span className="hidden text-left leading-tight sm:block">
                 <span className="block text-sm font-medium">{usuario?.name}</span>
                 <span className="block text-xs text-muted-foreground capitalize">{rol}</span>

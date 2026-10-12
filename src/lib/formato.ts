@@ -80,12 +80,3 @@ export function aInputFecha(valor?: string | null) {
 
   return fecha ? format(fecha, 'yyyy-MM-dd') : ''
 }
-
-export function iniciales(nombre?: string | null) {
-  return (nombre ?? '')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((palabra) => palabra[0]?.toUpperCase())
-    .join('')
-}

@@ -7,6 +7,8 @@ import { RutaCompuertaValidada, RutaSuperAdmin } from './features/sistema-admin/
 
 const LoginPage = lazy(() => import('./features/auth/login-page'))
 const RegistroPage = lazy(() => import('./features/auth/registro-page'))
+const RecuperarPasswordPage = lazy(() => import('./features/auth/recuperar-password-page'))
+const RestablecerPasswordPage = lazy(() => import('./features/auth/restablecer-password-page'))
 const ClaveMaestraPage = lazy(() => import('./features/sistema-admin/clave-maestra-page'))
 const SistemaAdminLoginPage = lazy(() => import('./features/sistema-admin/login-page'))
 const SaShell = lazy(() => import('./features/sistema-admin/sa-shell'))
@@ -89,6 +91,8 @@ export function App() {
       <Route element={<RutaInvitado />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegistroPage />} />
+        <Route path="/recuperar" element={<RecuperarPasswordPage />} />
+        <Route path="/restablecer-password" element={<RestablecerPasswordPage />} />
       </Route>
 
       <Route element={<RutaPrivada />}>

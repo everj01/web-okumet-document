@@ -11,3 +11,18 @@ export const verificacionApi = {
 export const registroApi = {
   buscarRuc: (numero: string) => api<{ data: RucResultado }>(`/registro/ruc/${numero}`).then((r) => r.data),
 }
+
+export interface RestablecerPasswordPayload {
+  email: string
+  token: string
+  password: string
+  password_confirmation: string
+}
+
+export const recuperacionApi = {
+  // el backend responde igual exista o no la cuenta, así que esto nunca revela si un correo está registrado
+  solicitar: (email: string) => api<{ message: string }>('/password/olvide', { method: 'POST', body: { email } }),
+
+  restablecer: (datos: RestablecerPasswordPayload) =>
+    api<{ message: string }>('/password/restablecer', { method: 'POST', body: datos }),
+}

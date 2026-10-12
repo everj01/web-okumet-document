@@ -1,19 +1,29 @@
+import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Info, KeyRound, Loader2, Sparkles } from 'lucide-react'
+import { BadgeCheck, Info, KeyRound, Loader2, Sparkles, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { AvatarUsuario } from '@/components/common/avatar-usuario'
 import { Campo } from '@/components/common/campo'
 import { PageHeader } from '@/components/common/page-header'
 import { useAuth } from '@/features/auth/auth-context'
 import { useClaudeUso } from '@/features/claude-usage/hooks'
 import { api, mensajeDeError } from '@/lib/api'
-import { iniciales } from '@/lib/formato'
 import { cn } from '@/lib/utils'
+import { useActualizarDatosPerfil, useQuitarFotoPerfil, useSubirFotoPerfil } from './hooks'
+
+const esquemaDatos = z.object({
+  dni: z.string().max(20),
+  colegiatura: z.string().max(20),
+})
+
+type FormularioDatos = z.infer<typeof esquemaDatos>
 
 const esquema = z
   .object({
@@ -31,6 +41,32 @@ type Formulario = z.infer<typeof esquema>
 export default function PerfilPage() {
   const { usuario, rol } = useAuth()
   const { data: claudeUso } = useClaudeUso()
+  const subirFoto = useSubirFotoPerfil()
+  const quitarFoto = useQuitarFotoPerfil()
+  const actualizarDatos = useActualizarDatosPerfil()
+  const inputFotoRef = useRef<HTMLInputElement>(null)
+
+  const {
+    register: registerDatos,
+    handleSubmit: handleSubmitDatos,
+    reset: resetDatos,
+    formState: { errors: erroresDatos },
+  } = useForm<FormularioDatos>({
+    resolver: zodResolver(esquemaDatos),
+    defaultValues: { dni: '', colegiatura: '' },
+  })
+
+  useEffect(() => {
+    resetDatos({ dni: usuario?.dni ?? '', colegiatura: usuario?.colegiatura ?? '' })
+  }, [usuario, resetDatos])
+
+  const enviarDatos = handleSubmitDatos((valores) =>
+    actualizarDatos.mutate({ dni: valores.dni || null, colegiatura: valores.colegiatura || null }),
+  )
+
+  const elegirFoto = (archivo: File | null) => {
+    if (archivo) subirFoto.mutate(archivo)
+  }
 
   const { register, handleSubmit, reset, formState } = useForm<Formulario>({
     resolver: zodResolver(esquema),
@@ -55,8 +91,40 @@ export default function PerfilPage() {
 
       <Card className="aparecer">
         <CardContent className="flex flex-wrap items-center gap-5 p-6">
-          <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-primary text-xl font-semibold text-primary-foreground">
-            {iniciales(usuario?.name)}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => inputFotoRef.current?.click()}
+              className="group relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl"
+              title="Cambiar foto"
+              aria-label="Cambiar foto"
+            >
+              <AvatarUsuario fotoUrl={usuario?.foto_url} nombre={usuario?.name} className="size-16 rounded-2xl" />
+              <span className="absolute inset-0 hidden items-center justify-center bg-black/50 text-white group-hover:flex">
+                {subirFoto.isPending ? <Loader2 className="size-5 animate-spin" /> : <Upload className="size-5" />}
+              </span>
+            </button>
+            <input
+              ref={inputFotoRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="sr-only"
+              onChange={(evento) => elegirFoto(evento.target.files?.[0] ?? null)}
+            />
+            {usuario?.foto_url ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="text-destructive hover:bg-destructive/10"
+                onClick={() => quitarFoto.mutate()}
+                disabled={quitarFoto.isPending}
+                title="Quitar foto"
+                aria-label="Quitar foto"
+              >
+                {quitarFoto.isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+              </Button>
+            ) : null}
           </div>
 
           <div className="grid flex-1 gap-4 sm:grid-cols-3">
@@ -116,6 +184,44 @@ export default function PerfilPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      <Card className="aparecer">
+        <div className="flex items-center gap-2 border-b border-border px-6 py-4">
+          <BadgeCheck className="size-4 text-muted-foreground" />
+          <h2 className="font-medium">Datos de abogado</h2>
+        </div>
+
+        <CardContent className="space-y-4 p-6">
+          <form onSubmit={enviarDatos} className="space-y-4" noValidate>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Campo etiqueta="DNI" error={erroresDatos.dni?.message}>
+                <Input {...registerDatos('dni')} />
+              </Campo>
+
+              <Campo etiqueta="Colegiatura" error={erroresDatos.colegiatura?.message}>
+                <Input {...registerDatos('colegiatura')} />
+              </Campo>
+            </div>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={actualizarDatos.isPending}>
+                {actualizarDatos.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                Guardar datos
+              </Button>
+            </div>
+          </form>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+            <label className="flex items-center gap-3">
+              <Switch checked={usuario?.abogado_habilitado ?? false} disabled />
+              <span className="text-sm text-muted-foreground">Abogado habilitado</span>
+            </label>
+            <Button type="button" variant="outline" size="sm" disabled title="Validación automática en proceso">
+              Validar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="aparecer">
         <div className="flex items-center gap-2 border-b border-border px-6 py-4">

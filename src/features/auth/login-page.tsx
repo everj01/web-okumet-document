@@ -105,7 +105,15 @@ export default function LoginPage() {
                 />
               </Campo>
 
-              <Campo etiqueta="Contraseña" error={errors.password?.message}>
+              <Campo
+                etiqueta="Contraseña"
+                error={errors.password?.message}
+                extra={
+                  <Link to="/recuperar" className="text-xs font-medium text-muted-foreground hover:underline">
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                }
+              >
                 <div className="relative">
                   <Input
                     type={verClave ? 'text' : 'password'}

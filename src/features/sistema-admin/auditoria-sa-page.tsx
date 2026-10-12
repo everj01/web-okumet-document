@@ -24,6 +24,8 @@ const ACCIONES: { valor: AccionLog; texto: string }[] = [
   { valor: 'exportacion', texto: 'Exportación' },
   { valor: 'reporte', texto: 'Reporte' },
   { valor: 'super_admin', texto: 'Super admin' },
+  { valor: 'password_olvidada', texto: 'Recuperación solicitada' },
+  { valor: 'password_restablecida', texto: 'Contraseña restablecida' },
 ]
 
 const MODULOS: { valor: ModuloLog; texto: string }[] = [
@@ -48,6 +50,8 @@ const VARIANTE_ACCION: Record<AccionLog, 'success' | 'warning' | 'danger' | 'inf
   exportacion: 'warning',
   reporte: 'warning',
   super_admin: 'info',
+  password_olvidada: 'warning',
+  password_restablecida: 'success',
 }
 
 const columnas: Columna<LogAuditoria>[] = [

@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ApiError, mensajeDeError } from '@/lib/api'
-import { registroApi, verificacionApi } from './api'
+import { recuperacionApi, registroApi, verificacionApi, type RestablecerPasswordPayload } from './api'
 import { useAuth } from './auth-context'
 
 export function useBuscarRuc() {
@@ -21,6 +21,20 @@ export function useReenviarCodigo() {
     mutationFn: verificacionApi.reenviar,
     onSuccess: () => toast.success('Código reenviado', { description: 'Revisa tu correo.' }),
     onError: (error) => toast.error('No se pudo reenviar', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useSolicitarRecuperacion() {
+  return useMutation({
+    mutationFn: (email: string) => recuperacionApi.solicitar(email),
+    onError: (error) => toast.error('No se pudo enviar la solicitud', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useRestablecerPassword() {
+  return useMutation({
+    mutationFn: (datos: RestablecerPasswordPayload) => recuperacionApi.restablecer(datos),
+    onError: (error) => toast.error('No se pudo restablecer', { description: mensajeDeError(error) }),
   })
 }
 

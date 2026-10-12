@@ -29,6 +29,8 @@ function crearEsquema(editando: boolean) {
       : z.string().min(8, 'Mínimo 8 caracteres'),
     rol_id: z.number().int().positive('Selecciona un rol'),
     telefono: z.string().max(30),
+    dni: z.string().max(20),
+    colegiatura: z.string().max(20),
     activo: z.boolean(),
   })
 }
@@ -58,6 +60,8 @@ export function UsuarioDialogo({ abierto, onAbierto, usuario }: Props) {
       password: '',
       rol_id: usuario?.rol_id ?? 0,
       telefono: usuario?.telefono ?? '',
+      dni: usuario?.dni ?? '',
+      colegiatura: usuario?.colegiatura ?? '',
       activo: usuario?.activo ?? true,
     })
   }, [abierto, usuario, reset])
@@ -68,6 +72,8 @@ export function UsuarioDialogo({ abierto, onAbierto, usuario }: Props) {
       email: valores.email,
       rol_id: valores.rol_id,
       telefono: valores.telefono || null,
+      dni: valores.dni || null,
+      colegiatura: valores.colegiatura || null,
       activo: valores.activo,
       ...(valores.password ? { password: valores.password } : {}),
     })
@@ -127,10 +133,30 @@ export function UsuarioDialogo({ abierto, onAbierto, usuario }: Props) {
             </Campo>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Campo etiqueta="DNI" error={errores.dni?.message}>
+              <Input {...register('dni')} />
+            </Campo>
+
+            <Campo etiqueta="Colegiatura" error={errores.colegiatura?.message}>
+              <Input {...register('colegiatura')} />
+            </Campo>
+          </div>
+
           <label className="flex items-center gap-3">
             <Switch checked={watch('activo')} onCheckedChange={(valor) => setValue('activo', valor)} />
             <span className="text-sm">Puede iniciar sesión</span>
           </label>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+            <label className="flex items-center gap-3">
+              <Switch checked={usuario?.abogado_habilitado ?? false} disabled />
+              <span className="text-sm text-muted-foreground">Abogado habilitado</span>
+            </label>
+            <Button type="button" variant="outline" size="sm" disabled title="Validación automática en proceso">
+              Validar
+            </Button>
+          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onAbierto(false)}>

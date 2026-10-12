@@ -57,6 +57,27 @@ export default function UsuariosPage() {
       celda: (usuario) => usuario.telefono || '—',
     },
     {
+      id: 'dni',
+      encabezado: 'DNI',
+      desde: 'lg',
+      celda: (usuario) => usuario.dni || '—',
+    },
+    {
+      id: 'colegiatura',
+      encabezado: 'Colegiatura',
+      desde: 'lg',
+      celda: (usuario) => usuario.colegiatura || '—',
+    },
+    {
+      id: 'abogado_habilitado',
+      encabezado: 'Abogado habilitado',
+      className: 'text-center',
+      desde: 'lg',
+      celda: (usuario) => (
+        <Badge variant="neutral">{usuario.abogado_habilitado ? 'Sí' : 'No'}</Badge>
+      ),
+    },
+    {
       id: 'rol',
       encabezado: 'Rol',
       className: 'text-center',

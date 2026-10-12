@@ -58,6 +58,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('okd:sesion-expirada', manejar)
   }, [cerrarSesion])
 
+  // El usuario queda cacheado en localStorage desde el login; esto lo refresca con lo
+  // que haya en la BD (p. ej. si lo editaron desde "Usuarios" en vez de "Mi perfil").
+  useEffect(() => {
+    if (!leerToken()) return
+
+    api<{ usuario: Usuario }>('/yo')
+      .then(({ usuario: fresco }) => {
+        localStorage.setItem(CLAVE_USUARIO, JSON.stringify(fresco))
+        setUsuario(fresco)
+      })
+      .catch(() => undefined)
+  }, [])
+
   useEffect(() => {
     if (usuario) {
       conectarEcho()
