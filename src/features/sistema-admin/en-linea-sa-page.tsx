@@ -4,7 +4,7 @@ import { EstadoError, EstadoVacio, FilasCargando } from '@/components/common/est
 import { PageHeader } from '@/components/common/page-header'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { mensajeDeError } from '@/lib/api'
-import { desdeAhora } from '@/lib/formato'
+import { desdeAhora, fechaHora } from '@/lib/formato'
 import { useUsuariosEnLineaSA } from './hooks'
 
 export default function EnLineaSaPage() {
@@ -48,7 +48,9 @@ export default function EnLineaSaPage() {
                   </TableCell>
                   <TableCell>{usuario.tenant?.nombre_comercial || '—'}</TableCell>
                   <TableCell className="hidden capitalize sm:table-cell">{usuario.rol || '—'}</TableCell>
-                  <TableCell className="text-right text-muted-foreground">{desdeAhora(usuario.conectado_desde)}</TableCell>
+                  <TableCell className="text-right text-muted-foreground" title={fechaHora(usuario.conectado_desde)}>
+                    {desdeAhora(usuario.conectado_desde)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

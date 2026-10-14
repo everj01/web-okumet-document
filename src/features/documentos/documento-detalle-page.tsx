@@ -25,8 +25,14 @@ import { useCatalogos } from '@/features/catalogos/use-catalogos'
 import { useBlobUrl } from '@/hooks/use-blob-url'
 import { ApiError, mensajeDeError } from '@/lib/api'
 import { fechaCorta, pesoLegible } from '@/lib/formato'
+import { AsignarExpedienteModal } from './asignar-expediente-modal'
 import { ExtraccionDialogo } from './extraccion-dialogo'
 import { useArchivo, useAsistente, useCrearEtiqueta, useDocumento, useSincronizarEtiquetasDocumento } from './hooks'
+
+const EVENTO_HISTORIAL: Record<string, string> = {
+  subido_huerfano: 'Subido sin expediente',
+  asignado_a_expediente: 'Asignado a expediente',
+}
 
 export default function DocumentoDetallePage() {
   const { uuid } = useParams()
@@ -42,6 +48,7 @@ export default function DocumentoDetallePage() {
   const [pagina, setPagina] = useState<number | null>(null)
   const [pregunta, setPregunta] = useState('')
   const [extrayendo, setExtrayendo] = useState(false)
+  const [asignandoExpediente, setAsignandoExpediente] = useState(false)
 
   const urlVisor = useMemo(
     () => (urlArchivo ? `${urlArchivo}#page=${pagina ?? 1}&view=FitH` : undefined),
@@ -123,7 +130,9 @@ export default function DocumentoDetallePage() {
               <Link to={`/expedientes/${documento.expediente.uuid}`} className="hover:underline">
                 {documento.expediente.codigo} — {documento.expediente.titulo}
               </Link>
-            ) : null}
+            ) : (
+              <Badge variant="warning">Huérfano — sin expediente</Badge>
+            )}
           </span>
         }
         acciones={
@@ -135,10 +144,17 @@ export default function DocumentoDetallePage() {
               onCambiar={(ids) => sincronizarEtiquetas.mutate(ids)}
               onCrear={(datos) => crearEtiqueta.mutateAsync(datos)}
             />
-            <Button variant="outline" onClick={() => setExtrayendo(true)} disabled={sinTexto}>
-              <ScanText className="size-4" />
-              Datos detectados
-            </Button>
+            {documento.expediente ? (
+              <Button variant="outline" onClick={() => setExtrayendo(true)} disabled={sinTexto}>
+                <ScanText className="size-4" />
+                Datos detectados
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setAsignandoExpediente(true)}>
+                <Sparkles className="size-4" />
+                Agregar expediente IA
+              </Button>
+            )}
             <Button variant="outline" onClick={descargar} disabled={!urlArchivo}>
               <Download className="size-4" />
               Descargar
@@ -300,6 +316,25 @@ export default function DocumentoDetallePage() {
         </div>
       </div>
 
+      {documento.historial?.length ? (
+        <Card className="aparecer">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="font-medium">Historial</h2>
+          </div>
+          <CardContent className="divide-y divide-border p-0">
+            {documento.historial.map((evento) => (
+              <div key={evento.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm">
+                <span>{EVENTO_HISTORIAL[evento.evento] ?? evento.evento}</span>
+                <span className="text-muted-foreground">
+                  {evento.expediente ? `${evento.expediente.codigo} · ` : ''}
+                  {evento.usuario ?? 'Sistema'} · {fechaCorta(evento.creado_en)}
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+
       {documento.expediente?.uuid ? (
         <ExtraccionDialogo
           abierto={extrayendo}
@@ -307,7 +342,13 @@ export default function DocumentoDetallePage() {
           documentoUuid={documento.uuid}
           expedienteUuid={documento.expediente.uuid}
         />
-      ) : null}
+      ) : (
+        <AsignarExpedienteModal
+          abierto={asignandoExpediente}
+          onAbierto={setAsignandoExpediente}
+          documentos={[documento]}
+        />
+      )}
     </div>
   )
 }

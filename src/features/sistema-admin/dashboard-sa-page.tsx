@@ -1,4 +1,5 @@
-import { Building2, FolderClock, ShieldAlert, Sparkles } from 'lucide-react'
+import { Building2, FileText, FolderClock, FolderOpen, ShieldAlert, Sparkles } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BarrasMensual } from '@/components/common/charts/barras-mensual'
@@ -13,6 +14,22 @@ const COLOR_SERIE_1 = 'var(--chart-series-1)'
 const COLOR_SERIE_2 = 'var(--chart-series-2)'
 const COLOR_SERIE_3 = 'var(--chart-series-3)'
 const COLOR_SERIE_4 = 'var(--chart-series-4)'
+
+function Contador({ icono: Icono, etiqueta, valor }: { icono: LucideIcon; etiqueta: string; valor: number }) {
+  return (
+    <Card className="aparecer overflow-hidden">
+      <CardContent className="flex items-center gap-4 p-5">
+        <div className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground">
+          <Icono className="size-5" />
+        </div>
+        <div>
+          <p className="text-2xl font-semibold tabular-nums">{valor}</p>
+          <p className="text-sm text-muted-foreground">{etiqueta}</p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 function TarjetaGrafico({ titulo, icono: Icono, children }: { titulo: string; icono: typeof Building2; children: React.ReactNode }) {
   return (
@@ -43,6 +60,30 @@ export default function DashboardSaPage() {
           <Skeleton className="h-72" />
         </div>
       ) : (
+        <>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Contador
+            icono={Building2}
+            etiqueta="Negocios totales"
+            valor={data.estado_negocios.tenants_activos + data.estado_negocios.tenants_inactivos}
+          />
+          <Contador
+            icono={FolderOpen}
+            etiqueta="Expedientes"
+            valor={data.expedientes_por_estado.reduce((suma, e) => suma + e.total, 0)}
+          />
+          <Contador
+            icono={FileText}
+            etiqueta="Documentos (12 meses)"
+            valor={data.actividad_casos.reduce((suma, d) => suma + d.documentos_subidos, 0)}
+          />
+          <Contador
+            icono={Sparkles}
+            etiqueta="Llamadas IA (12 meses)"
+            valor={data.uso_ia.reduce((suma, d) => suma + d.llamadas, 0)}
+          />
+        </div>
+
         <div className="grid gap-5 lg:grid-cols-2">
           <TarjetaGrafico titulo="Crecimiento de negocios y usuarios" icono={Building2}>
             <LineaMensual
@@ -106,6 +147,7 @@ export default function DashboardSaPage() {
             </div>
           </TarjetaGrafico>
         </div>
+        </>
       )}
     </div>
   )

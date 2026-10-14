@@ -1,5 +1,6 @@
 import { api, apiBlob } from '@/lib/api'
 import type { Cliente, Expediente, Evento, Paginado, Tenant, Usuario } from '@/types'
+import type { EstadoReporteFallo, MotivoReporteFallo, ReporteFallo } from '@/features/reportes-fallos/api'
 
 const CLAVE = 'okd_sa_gate'
 const TOKEN = 'okd_sa_token'
@@ -110,6 +111,12 @@ export interface FiltroLogs extends FiltroRecurso {
   modulo?: ModuloLog
 }
 
+export interface FiltroReportesFallo extends FiltroRecurso {
+  tenantId?: number
+  motivo?: MotivoReporteFallo
+  estado?: EstadoReporteFallo
+}
+
 export interface UsuarioEnLinea {
   id: number
   name: string
@@ -207,4 +214,29 @@ export const sistemaAdminApi = {
     api<{ data: ReporteSA }>(`/sistema-admin/reportes/${uuid}`, { token: leerTokenSA() }).then((r) => r.data),
 
   descargarReporte: (uuid: string) => apiBlob(`/sistema-admin/reportes/${uuid}/descargar`, leerTokenSA()),
+
+  reportesFallos: (filtro: FiltroReportesFallo) =>
+    api<Paginado<ReporteFallo>>('/sistema-admin/reportes-fallos', {
+      params: {
+        page: filtro.pagina,
+        buscar: filtro.buscar,
+        orden: filtro.orden,
+        direccion: filtro.direccion,
+        fecha_inicio: filtro.fechaInicio,
+        fecha_fin: filtro.fechaFin,
+        tenant_id: filtro.tenantId,
+        motivo: filtro.motivo,
+        estado: filtro.estado,
+      },
+      token: leerTokenSA(),
+    }),
+
+  capturaReporteFallo: (uuid: string) => apiBlob(`/sistema-admin/reportes-fallos/${uuid}/captura`, leerTokenSA()),
+
+  resolverReporteFallo: (uuid: string, respuesta: string) =>
+    api<{ data: ReporteFallo }>(`/sistema-admin/reportes-fallos/${uuid}/resolver`, {
+      method: 'PATCH',
+      body: { respuesta },
+      token: leerTokenSA(),
+    }).then((r) => r.data),
 }

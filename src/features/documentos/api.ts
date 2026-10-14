@@ -6,12 +6,19 @@ export interface FiltroDocumentos {
   buscar: string
   expedienteId?: number | null
   etiquetaId?: number | null
+  soloHuerfanos?: boolean
 }
 
 export const documentosApi = {
-  listar: ({ pagina, buscar, expedienteId, etiquetaId }: FiltroDocumentos) =>
+  listar: ({ pagina, buscar, expedienteId, etiquetaId, soloHuerfanos }: FiltroDocumentos) =>
     api<Paginado<Documento>>('/documentos', {
-      params: { page: pagina, buscar, expediente_id: expedienteId, etiqueta_id: etiquetaId },
+      params: {
+        page: pagina,
+        buscar,
+        expediente_id: expedienteId,
+        etiqueta_id: etiquetaId,
+        solo_huerfanos: soloHuerfanos ? 1 : undefined,
+      },
     }),
 
   obtener: (uuid: string) => api<{ data: Documento }>(`/documentos/${uuid}`).then((r) => r.data),
@@ -26,6 +33,21 @@ export const documentosApi = {
       body: cuerpo,
     }).then((r) => r.data)
   },
+
+  // Sube uno o varios PDFs sin ligarlos a ningún expediente todavía; no corre IA.
+  subirSinExpediente: (archivos: File[]) => {
+    const cuerpo = new FormData()
+    archivos.forEach((archivo) => cuerpo.append('archivos[]', archivo))
+
+    return api<{ data: Documento[] }>('/documentos', { method: 'POST', body: cuerpo }).then((r) => r.data)
+  },
+
+  // Convierte un documento huérfano en documento del expediente indicado (ya creado con /expedientes).
+  asignarExpediente: (uuid: string, expedienteId: number) =>
+    api<{ data: Documento }>(`/documentos/${uuid}/asignar-expediente`, {
+      method: 'POST',
+      body: { expediente_id: expedienteId },
+    }).then((r) => r.data),
 
   eliminar: (uuid: string) => api<void>(`/documentos/${uuid}`, { method: 'DELETE' }),
 

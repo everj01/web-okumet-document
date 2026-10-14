@@ -1,4 +1,4 @@
-import { Bell, CalendarClock, CalendarX, Download, Sparkles, XCircle } from 'lucide-react'
+import { Bell, CalendarClock, CalendarX, Download, MessageCircleReply, Sparkles, XCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 interface EstiloTipo {
@@ -17,6 +17,7 @@ const ESTILOS: Record<string, EstiloTipo> = {
   ia_credito_agotado: { icono: Sparkles, clase: 'text-destructive bg-destructive/10' },
   evento_proximo: { icono: CalendarClock, clase: 'text-sky-600 bg-sky-500/10 dark:text-sky-400' },
   evento_vencido: { icono: CalendarX, clase: 'text-destructive bg-destructive/10' },
+  reporte_fallo_respondido: { icono: MessageCircleReply, clase: 'text-sky-600 bg-sky-500/10 dark:text-sky-400' },
 }
 
 const ESTILO_DEFECTO: EstiloTipo = { icono: Bell, clase: 'text-muted-foreground bg-secondary' }

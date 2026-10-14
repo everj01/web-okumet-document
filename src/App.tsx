@@ -21,6 +21,7 @@ const EventosSaPage = lazy(() => import('./features/sistema-admin/eventos-sa-pag
 const EnLineaSaPage = lazy(() => import('./features/sistema-admin/en-linea-sa-page'))
 const AuditoriaSaPage = lazy(() => import('./features/sistema-admin/auditoria-sa-page'))
 const ReportesSaPage = lazy(() => import('./features/sistema-admin/reportes-sa-page'))
+const ReportesFallosSaPage = lazy(() => import('./features/sistema-admin/reportes-fallos-sa-page'))
 const PanelPage = lazy(() => import('./features/panel/panel-page'))
 const ClientesPage = lazy(() => import('./features/clientes/clientes-page'))
 const ClienteDetallePage = lazy(() => import('./features/clientes/cliente-detalle-page'))
@@ -80,6 +81,7 @@ export function App() {
                   <Route path="en-linea" element={<EnLineaSaPage />} />
                   <Route path="auditoria" element={<AuditoriaSaPage />} />
                   <Route path="reportes" element={<ReportesSaPage />} />
+                  <Route path="reportes-fallos" element={<ReportesFallosSaPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<Navigate to="/sistema_admin" replace />} />

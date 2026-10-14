@@ -1,5 +1,6 @@
 import {
   Building2,
+  Bug,
   CalendarClock,
   FileSpreadsheet,
   Folder,
@@ -28,4 +29,5 @@ export const NAV_SA: ItemNavSA[] = [
   { etiqueta: 'Usuarios en línea', ruta: 'en-linea', icono: Wifi },
   { etiqueta: 'Auditoría', ruta: 'auditoria', icono: ScrollText },
   { etiqueta: 'Reportes', ruta: 'reportes', icono: FileSpreadsheet },
+  { etiqueta: 'Reportes de fallos', ruta: 'reportes-fallos', icono: Bug },
 ]

@@ -8,6 +8,8 @@ export function Toaster() {
     <Sonner
       theme={tema}
       position="top-right"
+      // debajo del topbar (h-16 = 4rem) para que no choque ni se recorte contra él
+      offset={{ top: '4.5rem' }}
       richColors
       closeButton
       toastOptions={{ classNames: { toast: 'rounded-xl' } }}

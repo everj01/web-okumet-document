@@ -44,6 +44,7 @@ export function useSubirDocumento(expedienteUuid: string) {
     onSuccess: (documento: Documento) => {
       queryClient.invalidateQueries({ queryKey: ['documentos'] })
       queryClient.invalidateQueries({ queryKey: ['expedientes', 'detalle'] })
+      queryClient.invalidateQueries({ queryKey: ['almacenamiento-uso'] })
       toast.success('Documento subido', {
         description: documento.paginas
           ? `Se leyeron ${documento.paginas} páginas.`
@@ -51,6 +52,37 @@ export function useSubirDocumento(expedienteUuid: string) {
       })
     },
     onError: (error) => toast.error('No se pudo subir', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useSubirDocumentosSinExpediente() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (archivos: File[]) => documentosApi.subirSinExpediente(archivos),
+    onSuccess: (documentos: Documento[]) => {
+      queryClient.invalidateQueries({ queryKey: ['documentos'] })
+      queryClient.invalidateQueries({ queryKey: ['almacenamiento-uso'] })
+      toast.success(
+        documentos.length === 1 ? 'Documento subido' : `${documentos.length} documentos subidos`,
+        { description: 'Sin expediente todavía: usa "Agregar expediente IA" para completarlos.' },
+      )
+    },
+    onError: (error) => toast.error('No se pudo subir', { description: mensajeDeError(error) }),
+  })
+}
+
+export function useAsignarExpediente() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ uuid, expedienteId }: { uuid: string; expedienteId: number }) =>
+      documentosApi.asignarExpediente(uuid, expedienteId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documentos'] })
+      queryClient.invalidateQueries({ queryKey: ['expedientes'] })
+    },
+    onError: (error) => toast.error('No se pudo asignar el expediente', { description: mensajeDeError(error) }),
   })
 }
 
@@ -62,6 +94,7 @@ export function useEliminarDocumento() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documentos'] })
       queryClient.invalidateQueries({ queryKey: ['expedientes'] })
+      queryClient.invalidateQueries({ queryKey: ['almacenamiento-uso'] })
       toast.success('Documento eliminado')
     },
     onError: (error) => toast.error('No se pudo eliminar', { description: mensajeDeError(error) }),

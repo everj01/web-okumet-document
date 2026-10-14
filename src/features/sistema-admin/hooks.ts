@@ -1,10 +1,11 @@
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { mensajeDeError } from '@/lib/api'
 import {
   sistemaAdminApi,
   type FiltroLogs,
   type FiltroRecurso,
+  type FiltroReportesFallo,
   type NombreModuloReporte,
   type NombreRecurso,
   type ReportePayloadSA,
@@ -70,6 +71,28 @@ export function useReporteSA(uuid: string | undefined) {
       return estado === 'completado' || estado === 'fallido' ? false : 3000
     },
     refetchIntervalInBackground: true,
+  })
+}
+
+export function useReportesFalloSA(filtro: FiltroReportesFallo) {
+  return useQuery({
+    queryKey: ['sistema-admin', 'reportes-fallos', filtro],
+    queryFn: () => sistemaAdminApi.reportesFallos(filtro),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useResolverReporteFalloSA() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ uuid, respuesta }: { uuid: string; respuesta: string }) =>
+      sistemaAdminApi.resolverReporteFallo(uuid, respuesta),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sistema-admin', 'reportes-fallos'] })
+      toast.success('Respuesta enviada', { description: 'El usuario la va a ver en sus notificaciones.' })
+    },
+    onError: (error) => toast.error('No se pudo enviar la respuesta', { description: mensajeDeError(error) }),
   })
 }
 

@@ -1,5 +1,6 @@
 import { ActivoBadge } from '@/components/common/etiquetas-estado'
 import { PageHeader } from '@/components/common/page-header'
+import { fechaCorta } from '@/lib/formato'
 import { RecursoTabla } from './recurso-tabla'
 
 export default function UsuariosSaPage() {
@@ -19,6 +20,20 @@ export default function UsuariosSaPage() {
             encabezado: 'Estado',
             className: 'text-center',
             celda: (u) => <ActivoBadge activo={u.activo} />,
+          },
+          {
+            id: 'email_verificado',
+            encabezado: 'Correo verificado',
+            desde: 'lg',
+            className: 'text-center',
+            celda: (u) => (u.email_verificado ? 'Sí' : 'No'),
+          },
+          {
+            id: 'created_at',
+            encabezado: 'Creado',
+            desde: 'lg',
+            ordenable: true,
+            celda: (u) => fechaCorta(u.creado_en),
           },
         ]}
       />

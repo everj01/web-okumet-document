@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { BadgeCheck, Info, KeyRound, Loader2, Sparkles, Trash2, Upload } from 'lucide-react'
+import { BadgeCheck, HardDrive, Info, KeyRound, Loader2, Sparkles, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,9 +12,11 @@ import { Switch } from '@/components/ui/switch'
 import { AvatarUsuario } from '@/components/common/avatar-usuario'
 import { Campo } from '@/components/common/campo'
 import { PageHeader } from '@/components/common/page-header'
+import { useAlmacenamientoUso } from '@/features/almacenamiento/hooks'
 import { useAuth } from '@/features/auth/auth-context'
 import { useClaudeUso } from '@/features/claude-usage/hooks'
 import { api, mensajeDeError } from '@/lib/api'
+import { mbLegible } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { useActualizarDatosPerfil, useQuitarFotoPerfil, useSubirFotoPerfil } from './hooks'
 
@@ -41,6 +43,7 @@ type Formulario = z.infer<typeof esquema>
 export default function PerfilPage() {
   const { usuario, rol } = useAuth()
   const { data: claudeUso } = useClaudeUso()
+  const { data: almacenamiento } = useAlmacenamientoUso()
   const subirFoto = useSubirFotoPerfil()
   const quitarFoto = useQuitarFotoPerfil()
   const actualizarDatos = useActualizarDatosPerfil()
@@ -181,6 +184,50 @@ export default function PerfilPage() {
                 Te quedan pocos créditos de IA este mes (quedan {claudeUso.restante}).
               </p>
             ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {almacenamiento ? (
+        <Card className="aparecer">
+          <div className="flex items-center gap-2 border-b border-border px-6 py-4">
+            <HardDrive className="size-4 text-muted-foreground" />
+            <h2 className="font-medium">Almacenamiento de documentos</h2>
+          </div>
+
+          <CardContent className="space-y-2 p-6">
+            {almacenamiento.limite_mb === null ? (
+              <p className="text-sm">{mbLegible(almacenamiento.usado_mb)} usados · sin límite configurado</p>
+            ) : (
+              <>
+                <div className="flex items-baseline justify-between text-sm">
+                  <span>
+                    {mbLegible(almacenamiento.usado_mb)} de {mbLegible(almacenamiento.limite_mb)} usados
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all',
+                      almacenamiento.usado_mb >= almacenamiento.limite_mb
+                        ? 'bg-destructive'
+                        : (almacenamiento.restante_mb ?? 0) <= almacenamiento.limite_mb * 0.1
+                          ? 'bg-warning'
+                          : 'bg-primary',
+                    )}
+                    style={{
+                      width: `${Math.min(100, (almacenamiento.usado_mb / almacenamiento.limite_mb) * 100)}%`,
+                    }}
+                  />
+                </div>
+                {almacenamiento.usado_mb >= almacenamiento.limite_mb ? (
+                  <p className="flex items-center gap-1.5 text-xs text-destructive">
+                    <Info className="size-3.5 shrink-0" />
+                    Alcanzaste el límite de almacenamiento. Elimina documentos para liberar espacio.
+                  </p>
+                ) : null}
+              </>
+            )}
           </CardContent>
         </Card>
       ) : null}

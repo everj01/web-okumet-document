@@ -56,6 +56,10 @@ export function pesoLegible(bytes: number) {
   return kb < 1024 ? `${Math.round(kb)} KB` : `${(kb / 1024).toFixed(1)} MB`
 }
 
+export function mbLegible(mb: number) {
+  return mb < 1024 ? `${mb.toFixed(mb < 10 ? 2 : 1)} MB` : `${(mb / 1024).toFixed(2)} GB`
+}
+
 // el backend espera Y-m-d / Y-m-d H:i:s en hora local
 export function aFechaApi(valor: Date | string) {
   const fecha = valor instanceof Date ? valor : new Date(valor)

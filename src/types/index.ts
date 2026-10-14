@@ -177,18 +177,30 @@ export interface Etiqueta {
 
 export type EtiquetaPayload = Omit<Etiqueta, 'id' | 'uuid'>
 
+export type EventoHistorialDocumento = 'subido_huerfano' | 'asignado_a_expediente'
+
+export interface HistorialDocumento {
+  id: number
+  evento: EventoHistorialDocumento
+  expediente?: { uuid: string; codigo: string; titulo: string } | null
+  usuario?: string | null
+  creado_en?: string
+}
+
 export interface Documento {
   id: number
   uuid: string
-  expediente_id: number
+  // null = huérfano: todavía no está ligado a ningún expediente
+  expediente_id: number | null
   nombre: string
   tamano: number
   paginas: number
   resumen: string | null
-  expediente?: { id: number; uuid: string; codigo: string; titulo: string }
+  expediente?: { id: number; uuid: string; codigo: string; titulo: string } | null
   subido_por?: string | null
   consultas?: Consulta[]
   etiquetas?: Etiqueta[]
+  historial?: HistorialDocumento[]
   creado_en?: string
 }
 
@@ -298,6 +310,13 @@ export interface ClaudeUso {
   restante: number
   advertencia: boolean
   periodo: string
+}
+
+// limite_mb y restante_mb son null cuando el tenant no tiene tope de almacenamiento configurado
+export interface AlmacenamientoUso {
+  usado_mb: number
+  limite_mb: number | null
+  restante_mb: number | null
 }
 
 export interface Notificacion {

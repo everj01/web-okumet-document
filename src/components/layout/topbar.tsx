@@ -15,6 +15,7 @@ import { AvatarUsuario } from '@/components/common/avatar-usuario'
 import { useAuth } from '@/features/auth/auth-context'
 import { useClaudeUso } from '@/features/claude-usage/hooks'
 import { NotificacionesMenu } from '@/features/notificaciones/notificaciones-menu'
+import { ReportarFallaBoton } from '@/features/reportes-fallos/reportar-falla-modal'
 import { useTema } from '@/hooks/use-tema'
 import { cn } from '@/lib/utils'
 import { Sidebar } from './sidebar'
@@ -59,6 +60,8 @@ export function Topbar() {
         ) : null}
 
         <NotificacionesMenu />
+
+        <ReportarFallaBoton />
 
         <Button variant="ghost" size="icon" onClick={alternar} title="Cambiar tema" aria-label="Cambiar tema">
           {tema === 'dark' ? <Sun className="size-4.5" /> : <Moon className="size-4.5" />}
