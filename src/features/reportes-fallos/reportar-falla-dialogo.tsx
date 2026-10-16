@@ -72,8 +72,8 @@ export function ReportarFallaDialogo({ abierto, onAbierto, captura }: Props) {
     <Dialog open={abierto} onOpenChange={onAbierto}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Reportar una falla</DialogTitle>
-          <DialogDescription>Soporte técnico va a revisar esto junto con una captura de esta pantalla.</DialogDescription>
+          <DialogTitle>Reportar un problema</DialogTitle>
+          <DialogDescription>Soporte técnico va a revisar esto junto con una captura de esta pantalla, todos los datos son con fines para mejorar el servicio.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={enviarReporte} className="space-y-4" noValidate>
